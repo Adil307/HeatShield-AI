@@ -1,0 +1,205 @@
+{
+  "schema_version": "heatshield.day8.action_catalog.v1",
+  "catalog_version": "1.0.0",
+  "scope": "controlled_planning_actions_for_scenario_replay_not_medical_advice",
+  "source_registry": {
+    "niosh_workplace_recommendations_2026": {
+      "publisher": "CDC/NIOSH",
+      "title": "Workplace Recommendations - Heat",
+      "url": "https://www.cdc.gov/niosh/heat-stress/recommendations/index.html",
+      "authority_scope": "workplace heat-stress prevention and controls"
+    },
+    "niosh_heat_safety_tool_2026": {
+      "publisher": "CDC/NIOSH",
+      "title": "OSHA-NIOSH Heat Safety Tool App",
+      "url": "https://www.cdc.gov/niosh/heat-stress/communication-resources/app.html",
+      "authority_scope": "heat-index screening and preventive options for outdoor workers"
+    },
+    "epa_trees_vegetation_2025": {
+      "publisher": "US EPA",
+      "title": "Using Trees and Vegetation to Reduce Heat Islands",
+      "url": "https://www.epa.gov/heatislands/using-trees-and-vegetation-reduce-heat-islands",
+      "authority_scope": "urban heat-island mitigation using trees and vegetation"
+    },
+    "epa_heat_island_solutions_2025": {
+      "publisher": "US EPA",
+      "title": "Heat Island Reduction Solutions",
+      "url": "https://www.epa.gov/heatislands/heat-island-reduction-solutions",
+      "authority_scope": "community heat-island mitigation options"
+    }
+  },
+  "actions": [
+    {
+      "action_id": "verify_operational_vulnerability_factors",
+      "title": "Verify operational vulnerability factors",
+      "action_type": "evidence_verification",
+      "priority_tier": "P1",
+      "status": "ready_for_verification",
+      "trigger": {
+        "all": [
+          {
+            "type": "classification_is",
+            "key": "verified_operational_vulnerability",
+            "classification": "unknown"
+          }
+        ]
+      },
+      "recommendation": "Before using an adjusted operational priority, verify physical exertion, acclimatization status, and heat-burdening PPE or clothing for the operation being evaluated.",
+      "why_template": "Adjusted priority is withheld because verified operational vulnerability evidence is currently unknown.",
+      "required_verification": [
+        "physical_exertion",
+        "acclimatization_status",
+        "heat_burdening_ppe_or_clothing"
+      ],
+      "limitations": [
+        "This action does not assert that vulnerability factors are present; it requests verification.",
+        "No individual medical susceptibility is inferred."
+      ],
+      "authoritative_basis": [
+        "niosh_workplace_recommendations_2026"
+      ]
+    },
+    {
+      "action_id": "verify_adaptive_heat_controls",
+      "title": "Verify protective heat controls",
+      "action_type": "evidence_verification",
+      "priority_tier": "P1",
+      "status": "ready_for_verification",
+      "trigger": {
+        "all": [
+          {
+            "type": "classification_is",
+            "key": "verified_adaptive_capacity",
+            "classification": "unknown"
+          }
+        ]
+      },
+      "recommendation": "Verify whether potable water, shaded or cooled recovery, work-rest controls, and heat training or monitoring are available for any operation being evaluated.",
+      "why_template": "Evidence-adjusted priority is withheld because verified adaptive-capacity evidence is currently unknown.",
+      "required_verification": [
+        "potable_water_access",
+        "shaded_or_cooled_recovery",
+        "work_rest_controls",
+        "heat_training_or_monitoring"
+      ],
+      "limitations": [
+        "This action does not assert that protective controls are absent; it requests verification.",
+        "The appropriate controls depend on the actual activity, workload, PPE, and worksite conditions."
+      ],
+      "authoritative_basis": [
+        "niosh_workplace_recommendations_2026",
+        "niosh_heat_safety_tool_2026"
+      ]
+    },
+    {
+      "action_id": "assess_public_shade_recovery_options",
+      "title": "Assess shade and recovery options around public-use contexts",
+      "action_type": "planning_assessment",
+      "priority_tier": "P2",
+      "status": "ready_for_assessment",
+      "trigger": {
+        "all": [
+          {
+            "type": "numeric_at_least",
+            "key": "hazard_planning_ordinal",
+            "threshold": 40.0
+          },
+          {
+            "type": "any_numeric_positive",
+            "keys": [
+              "current_mapped_transit_waiting_objects_within_radius",
+              "current_mapped_outdoor_public_objects_within_radius"
+            ]
+          }
+        ]
+      },
+      "recommendation": "In this scenario replay, assess whether relevant transit-waiting and outdoor-public locations near the hotspot have suitable shade or cool recovery options before selecting an intervention.",
+      "why_template": "The ledger records hazard ordinal {hazard_planning_ordinal} with {current_mapped_transit_waiting_objects_within_radius} mapped transit-waiting and {current_mapped_outdoor_public_objects_within_radius} mapped outdoor-public objects within the analysis radius.",
+      "required_verification": [
+        "site_specific_shade_or_cooling_inventory",
+        "actual_use_or_occupancy",
+        "feasibility_and_accessibility"
+      ],
+      "limitations": [
+        "Mapped objects do not establish actual occupancy or footfall.",
+        "Historical thermal evidence is being replayed against current mapped context; this is not current heat."
+      ],
+      "authoritative_basis": [
+        "niosh_heat_safety_tool_2026",
+        "epa_heat_island_solutions_2025"
+      ]
+    },
+    {
+      "action_id": "assess_tree_vegetation_shade_feasibility",
+      "title": "Assess tree and vegetation shade feasibility",
+      "action_type": "long_term_mitigation_assessment",
+      "priority_tier": "P3",
+      "status": "ready_for_assessment",
+      "trigger": {
+        "all": [
+          {
+            "type": "numeric_at_least",
+            "key": "hazard_planning_ordinal",
+            "threshold": 60.0
+          },
+          {
+            "type": "any_numeric_positive",
+            "keys": [
+              "current_mapped_transit_waiting_objects_within_radius",
+              "current_mapped_outdoor_public_objects_within_radius",
+              "current_mapped_civic_public_objects_within_radius"
+            ]
+          }
+        ]
+      },
+      "recommendation": "Evaluate whether trees, vegetation, or other shade strategies are feasible at relevant public locations near the replayed hotspot as a long-term heat-island mitigation option.",
+      "why_template": "The ledger records hazard ordinal {hazard_planning_ordinal} with mapped public-use context nearby: transit={current_mapped_transit_waiting_objects_within_radius}, outdoor_public={current_mapped_outdoor_public_objects_within_radius}, civic_public={current_mapped_civic_public_objects_within_radius}.",
+      "required_verification": [
+        "site_ownership_and_design_constraints",
+        "existing_canopy_and_shade",
+        "utilities_and_right_of_way_constraints",
+        "maintenance_and_water_requirements"
+      ],
+      "limitations": [
+        "HeatShield does not estimate a site-specific temperature reduction without a validated intervention model.",
+        "This is a feasibility assessment, not an instruction to plant or construct at a specific site."
+      ],
+      "authoritative_basis": [
+        "epa_trees_vegetation_2025",
+        "epa_heat_island_solutions_2025"
+      ]
+    },
+    {
+      "action_id": "review_worker_heat_practices_if_applicable",
+      "title": "Review worker heat practices if operations are present",
+      "action_type": "conditional_operational_review",
+      "priority_tier": "P2",
+      "status": "conditional_requires_operator_scope",
+      "trigger": {
+        "all": [
+          {
+            "type": "numeric_at_least",
+            "key": "hazard_planning_ordinal",
+            "threshold": 60.0
+          }
+        ]
+      },
+      "recommendation": "If outdoor or hot-environment work occurs in the affected area, review water access, recovery breaks, scheduling, acclimatization, training, and buddy or monitoring practices before the operation.",
+      "why_template": "The thermal-hazard planning ordinal is {hazard_planning_ordinal}; if actual outdoor or hot-environment work is confirmed, recognized heat-control practices should be reviewed.",
+      "required_verification": [
+        "operator_scope_is_applicable",
+        "actual_work_activity_and_schedule",
+        "workload_and_ppe",
+        "existing_heat_control_plan"
+      ],
+      "limitations": [
+        "Current mapped context does not prove that workers are present.",
+        "This recommendation activates only as a conditional review until operator scope is verified."
+      ],
+      "authoritative_basis": [
+        "niosh_workplace_recommendations_2026",
+        "niosh_heat_safety_tool_2026"
+      ]
+    }
+  ]
+}

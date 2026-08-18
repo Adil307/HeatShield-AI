@@ -125,3 +125,8 @@ Day 6 adds a human-in-the-loop operational evidence layer for vulnerability and 
 
 HeatShield now produces deterministic explanation packets over the verified Day 4.4 -> Day 5 -> Day 6 provenance chain. Each claimable value is classified as observed or derived, while missing evidence remains unknown and policy-blocked outputs remain withheld. The structured Evidence Guard approves only exact ledger-grounded claims, rejects medical-risk probability and semantic overclaims, and requires free-form AI text to be decomposed into structured grounded claims before rendering. Day 7 makes zero provider/API/LLM calls.
 
+
+## Day 8 - Controlled Action Recommendation Engine
+
+Day 8 adds a deterministic, versioned recommendation catalog grounded in the Day 7 evidence ledger. Actions are emitted only when catalog triggers are satisfied, carry exact triggering evidence and authoritative source IDs, and pass a recommendation guard. Unknown operational factors trigger verification rather than being treated as absent. No provider, Overpass, or LLM calls are required.
+
