@@ -1,0 +1,23 @@
+{
+  "schema_version": "heatshield.day6.site_evidence.v1",
+  "profile_type": "operational_worksite_v1",
+  "scope": "human_in_the_loop_operational_evidence_not_medical_risk",
+  "instructions": "Example only. Replace unknown factors only with directly verified operational evidence. Do not infer from OSM, temperature, or an LLM.",
+  "hotspots": [
+    {
+      "hotspot_rank": 1,
+      "tile_id": 149,
+      "vulnerability": {
+        "physical_exertion": {"status": "unknown", "level": null, "source_type": null, "source_ref": null, "observed_at": null, "notes": null},
+        "acclimatization_gap": {"status": "unknown", "level": null, "source_type": null, "source_ref": null, "observed_at": null, "notes": null},
+        "heat_trapping_ppe_or_clothing": {"status": "unknown", "level": null, "source_type": null, "source_ref": null, "observed_at": null, "notes": null}
+      },
+      "adaptive_capacity": {
+        "potable_water_access": {"status": "unknown", "level": null, "source_type": null, "source_ref": null, "observed_at": null, "notes": null},
+        "shaded_or_cooled_recovery": {"status": "unknown", "level": null, "source_type": null, "source_ref": null, "observed_at": null, "notes": null},
+        "work_rest_controls": {"status": "unknown", "level": null, "source_type": null, "source_ref": null, "observed_at": null, "notes": null},
+        "heat_training_and_monitoring": {"status": "unknown", "level": null, "source_type": null, "source_ref": null, "observed_at": null, "notes": null}
+      }
+    }
+  ]
+}

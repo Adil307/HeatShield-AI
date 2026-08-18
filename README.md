@@ -116,3 +116,7 @@ When near-current FortyGuard heatmaps completed with zero GeoJSON features, Heat
 ## Day 5 - Transparent Planning Priority Engine
 
 Day 5 converts the evidence-safe Day 4.4 scenario replay into a deterministic planning-priority ranking. It uses an NWS-anchored heat-index hazard ordinal, capped mapped-context exposure, and a conservative place-type sensitivity proxy. Individual vulnerability and adaptive capacity remain unknown unless directly verified, so HeatShield intentionally withholds a final medical/risk score. The engine records factor explanations, evidence IDs, alternative weight sets, and ranking stability without making new network calls.
+
+## Day 6 - Verified Vulnerability and Adaptive Capacity Evidence Layer
+
+Day 6 adds a human-in-the-loop operational evidence layer for vulnerability and adaptive capacity. HeatShield never infers exertion, acclimatization, PPE/clothing, hydration, recovery, work-rest controls, or training from OSM, temperature, or an LLM. Unknown factors remain unknown. An evidence-adjusted planning priority is unlocked only when every required factor is explicitly verified, while medical/clinical risk remains outside the model. Day 6 makes no provider/API calls.
