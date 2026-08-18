@@ -41,11 +41,20 @@ def classify_context(tags: Mapping[str, str]) -> tuple[str, str] | None:
     return None
 
 
-def overpass_tag_filters() -> tuple[str, ...]:
-    amenity_values = sorted(HEALTHCARE | EDUCATION | CIVIC_PUBLIC | {"bus_station"})
-    return (
-        f'nwr["amenity"~"^({"|".join(amenity_values)})$"];',
-        'nwr["highway"="bus_stop"];',
-        f'nwr["public_transport"~"^({"|".join(sorted(PUBLIC_TRANSPORT))})$"];',
-        f'nwr["leisure"~"^({"|".join(sorted(OUTDOOR_PUBLIC))})$"];',
-    )
+def overpass_filters_for_category(category: str) -> tuple[str, ...]:
+    """Return exact-value Overpass statements for one evidence category."""
+    if category == "healthcare":
+        return tuple(f'nwr["amenity"="{value}"];' for value in sorted(HEALTHCARE))
+    if category == "education":
+        return tuple(f'nwr["amenity"="{value}"];' for value in sorted(EDUCATION))
+    if category == "transit_waiting":
+        return (
+            'nwr["highway"="bus_stop"];',
+            'nwr["amenity"="bus_station"];',
+            *(f'nwr["public_transport"="{value}"];' for value in sorted(PUBLIC_TRANSPORT)),
+        )
+    if category == "outdoor_public":
+        return tuple(f'nwr["leisure"="{value}"];' for value in sorted(OUTDOOR_PUBLIC))
+    if category == "civic_public":
+        return tuple(f'nwr["amenity"="{value}"];' for value in sorted(CIVIC_PUBLIC))
+    raise ValueError(f"Unknown context category: {category}")

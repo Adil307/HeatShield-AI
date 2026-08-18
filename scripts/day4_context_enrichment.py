@@ -11,12 +11,14 @@ from app.core.config import get_settings
 from app.providers.openstreetmap import OverpassClient, OverpassError
 from app.services.context_intelligence import (
     ContextValidationError,
-    build_context_query,
+    build_context_query_bundle,
     build_hotspot_contexts,
+    merge_context_places,
     parse_overpass_context,
-    query_fingerprint,
+    query_bundle_fingerprint,
     raw_cache_fingerprint,
 )
+from app.services.context_taxonomy import CATEGORY_ORDER
 from app.services.day3_artifact import Day3ArtifactError, load_day3_artifact, resolve_osm_snapshot_utc
 from app.services.evidence import sha256_file
 
@@ -57,7 +59,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--force-refresh",
         action="store_true",
-        help="Ignore a valid local OSM response cache and query Overpass again.",
+        help="Ignore valid local OSM response caches and query Overpass again.",
+    )
+    parser.add_argument(
+        "--require-complete",
+        action="store_true",
+        help="Fail unless every context category was successfully observed from Overpass.",
     )
     return parser
 
@@ -75,6 +82,11 @@ def _read_json(path: Path) -> dict[str, Any]:
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _safe_error(exc: Exception) -> str:
+    text = str(exc).strip()
+    return text[:700] if text else exc.__class__.__name__
 
 
 async def run(args: argparse.Namespace) -> int:
@@ -102,55 +114,160 @@ async def run(args: argparse.Namespace) -> int:
 
         selected = day3.hotspots[: min(args.limit, len(day3.hotspots))]
         snapshot_utc, snapshot_basis = resolve_osm_snapshot_utc(day3)
-        query, bbox = build_context_query(
+        plans, bbox = build_context_query_bundle(
             selected,
             radius_meters=args.radius_meters,
             snapshot_utc=snapshot_utc,
         )
-        query_sha = query_fingerprint(query)
-        cache_key = raw_cache_fingerprint(query_sha256=query_sha)
-        cache_path = raw_dir / f"osm_context_{cache_key[:16]}.json"
+        bundle_sha = query_bundle_fingerprint(plans)
 
-        cache_hit = False
-        provider_endpoint: str | None = None
-        if cache_path.exists() and not args.force_refresh:
-            wrapper = _read_json(cache_path)
-            if wrapper.get("query_sha256") == query_sha and isinstance(wrapper.get("response"), dict):
-                parse_overpass_context(wrapper)
-                cache_hit = True
-                provider_endpoint = wrapper.get("endpoint") if isinstance(wrapper.get("endpoint"), str) else None
-            else:
-                wrapper = {}
-        else:
-            wrapper = {}
+        client = OverpassClient(get_settings())
+        place_groups = []
+        group_records: dict[str, dict[str, Any]] = {}
+        osm_bases: list[str] = []
+        total_http_requests = 0
+        total_semantic_rejections = 0
+        total_cache_hits = 0
+        attempted_endpoints: list[str] = []
 
-        if not cache_hit:
-            print(
-                f"[submit] historical OSM context snapshot={snapshot_utc.isoformat()} "
-                f"hotspots={len(selected)} radius={args.radius_meters:.0f}m"
-            )
-            result = await OverpassClient(get_settings()).query(query)
-            provider_endpoint = result.endpoint
+        print(
+            f"[submit] historical OSM context snapshot={snapshot_utc.isoformat()} "
+            f"hotspots={len(selected)} radius={args.radius_meters:.0f}m"
+        )
+        print(f"[strategy] {len(plans)} small category queries; sequential endpoint failover")
+
+        for plan in plans:
+            cache_key = raw_cache_fingerprint(query_sha256=plan.query_sha256)
+            cache_path = raw_dir / f"osm_context_{plan.category}_{cache_key[:16]}.json"
+            wrapper: dict[str, Any] = {}
+            cache_hit = False
+
+            if cache_path.exists() and not args.force_refresh:
+                candidate = _read_json(cache_path)
+                if (
+                    candidate.get("query_sha256") == plan.query_sha256
+                    and isinstance(candidate.get("response"), dict)
+                ):
+                    try:
+                        places, osm_base = parse_overpass_context(candidate)
+                    except ContextValidationError as exc:
+                        print(f"[cache-invalid] {plan.category}: {exc}; refreshing")
+                    else:
+                        cache_hit = True
+                        total_cache_hits += 1
+                        place_groups.append(places)
+                        if osm_base:
+                            osm_bases.append(osm_base)
+                        group_records[plan.category] = {
+                            "status": "observed",
+                            "cache_hit": True,
+                            "query_sha256": plan.query_sha256,
+                            "endpoint": candidate.get("endpoint"),
+                            "objects_fetched": len(places),
+                            "http_requests": 0,
+                            "semantic_rejections": 0,
+                            "attempted_endpoints": [],
+                        }
+                        print(f"[cache] {plan.category:<16} objects={len(places)}")
+
+            if cache_hit:
+                continue
+
+            try:
+                result = await client.query(plan.query)
+            except OverpassError as exc:
+                group_records[plan.category] = {
+                    "status": "unavailable_provider_failure",
+                    "cache_hit": False,
+                    "query_sha256": plan.query_sha256,
+                    "endpoint": None,
+                    "objects_fetched": None,
+                    "http_requests": len(client.endpoints),
+                    "semantic_rejections": None,
+                    "attempted_endpoints": list(client.endpoints),
+                    "error": _safe_error(exc),
+                }
+                total_http_requests += len(client.endpoints)
+                for endpoint in client.endpoints:
+                    if endpoint not in attempted_endpoints:
+                        attempted_endpoints.append(endpoint)
+                print(f"[unavailable] {plan.category:<16} {_safe_error(exc)}")
+                continue
+
+            total_http_requests += result.request_count
+            total_semantic_rejections += result.semantic_rejections
+            for endpoint in result.attempted_endpoints:
+                if endpoint not in attempted_endpoints:
+                    attempted_endpoints.append(endpoint)
+
             wrapper = {
                 "provider": "OpenStreetMap Overpass API",
                 "endpoint": result.endpoint,
-                "query_sha256": query_sha,
+                "category": plan.category,
+                "query_sha256": plan.query_sha256,
                 "query_snapshot_utc": snapshot_utc.isoformat(),
                 "attribution": ATTRIBUTION,
                 "license": "ODbL 1.0",
+                "request_count": result.request_count,
+                "semantic_rejections": result.semantic_rejections,
+                "attempted_endpoints": list(result.attempted_endpoints),
+                "response_semantically_valid": True,
                 "response": result.response,
             }
+            # Only semantically valid responses reach this point and may be cached.
             _write_json(cache_path, wrapper)
-        else:
-            print(f"[cache] using {cache_path}")
+            places, osm_base = parse_overpass_context(wrapper)
+            place_groups.append(places)
+            if osm_base:
+                osm_bases.append(osm_base)
+            group_records[plan.category] = {
+                "status": "observed",
+                "cache_hit": False,
+                "query_sha256": plan.query_sha256,
+                "endpoint": result.endpoint,
+                "objects_fetched": len(places),
+                "http_requests": result.request_count,
+                "semantic_rejections": result.semantic_rejections,
+                "attempted_endpoints": list(result.attempted_endpoints),
+            }
+            print(
+                f"[ok] {plan.category:<16} objects={len(places):<4} "
+                f"endpoint={result.endpoint}"
+            )
 
-        places, osm_base = parse_overpass_context(wrapper)
+        observed_categories = tuple(
+            category for category in CATEGORY_ORDER
+            if group_records.get(category, {}).get("status") == "observed"
+        )
+        unavailable_categories = tuple(
+            category for category in CATEGORY_ORDER if category not in observed_categories
+        )
+
+        if not observed_categories:
+            raise OverpassError(
+                "All historical context category queries failed across all configured Overpass endpoints. "
+                "No zero-context artifact was produced."
+            )
+        if args.require_complete and unavailable_categories:
+            raise OverpassError(
+                "Historical context coverage is partial; unavailable categories: "
+                + ", ".join(unavailable_categories)
+            )
+
+        places = merge_context_places(place_groups)
+        category_status = {
+            category: (
+                "observed" if category in observed_categories else "unavailable_provider_failure"
+            )
+            for category in CATEGORY_ORDER
+        }
         contexts = build_hotspot_contexts(
             hotspots=selected,
             places=places,
             radius_meters=args.radius_meters,
             day3_sha256=day3_sha,
-            query_sha256=query_sha,
+            query_sha256=bundle_sha,
+            category_status=category_status,
         )
 
     except (Day3ArtifactError, ContextValidationError, OverpassError, ValueError) as exc:
@@ -161,22 +278,21 @@ async def run(args: argparse.Namespace) -> int:
         return 1
 
     unique_assigned_refs = {
-        item.place.osm_ref
-        for context in contexts
-        for item in context.nearby_places
+        item.place.osm_ref for context in contexts for item in context.nearby_places
     }
+    coverage_status = "complete" if not unavailable_categories else "partial"
 
     artifact = {
-        "schema_version": "heatshield.day4.context.v1",
+        "schema_version": "heatshield.day4.context.v1.2",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "classification": {
             "observed": (
-                "OpenStreetMap objects and tags returned by a historical Overpass snapshot; "
+                "OpenStreetMap objects and tags returned by successful historical Overpass category queries; "
                 "Day-3 coordinates and evidence identifiers"
             ),
             "derived": (
                 "HeatShield context taxonomy, query bounding box, exact geodesic distances, "
-                "category counts, spatial assignments and evidence linkage"
+                "category counts, category availability states, spatial assignments and evidence linkage"
             ),
             "inferred": None,
             "recommended": None,
@@ -188,22 +304,31 @@ async def run(args: argparse.Namespace) -> int:
             "heatmap_artifact_sha256": day3.heatmap_artifact_sha256,
             "openstreetmap": {
                 "provider": "OpenStreetMap via Overpass API",
-                "endpoint": provider_endpoint,
                 "attribution": ATTRIBUTION,
                 "license": "ODbL 1.0",
                 "license_url": ODBL_URL,
                 "requested_snapshot_utc": snapshot_utc.isoformat(),
                 "snapshot_basis": snapshot_basis,
-                "osm_base": osm_base,
-                "query_sha256": query_sha,
+                "osm_base_values": sorted(set(osm_bases)),
+                "query_bundle_sha256": bundle_sha,
+                "category_queries": {
+                    plan.category: plan.query_sha256 for plan in plans
+                },
             },
         },
         "execution": {
             "hotspots_analyzed": len(contexts),
             "radius_meters": args.radius_meters,
-            "overpass_queries_this_run": 0 if cache_hit else 1,
-            "cache_hits": 1 if cache_hit else 0,
-            "query_strategy": "single_historical_bbox_query_then_local_spatial_assignment",
+            "query_strategy": "historical_bbox_split_by_context_category_then_local_spatial_assignment_v2",
+            "category_query_count": len(plans),
+            "coverage_status": coverage_status,
+            "observed_categories": list(observed_categories),
+            "unavailable_categories": list(unavailable_categories),
+            "category_query_results": group_records,
+            "overpass_http_requests_this_run": total_http_requests,
+            "overpass_semantic_rejections_this_run": total_semantic_rejections,
+            "attempted_endpoints": attempted_endpoints,
+            "cache_hits": total_cache_hits,
             "bbox": {
                 "south": bbox.south,
                 "west": bbox.west,
@@ -215,15 +340,10 @@ async def run(args: argparse.Namespace) -> int:
         },
         "context_policy": {
             "semantic_label": "exposure_context_candidates",
-            "categories": [
-                "healthcare",
-                "education",
-                "transit_waiting",
-                "outdoor_public",
-                "civic_public",
-            ],
+            "categories": list(CATEGORY_ORDER),
             "absence_semantics": (
-                "No mapped result is treated as unknown/not-observed, not proof that a facility or activity is absent."
+                "A zero count is interpretable only when that category status is observed. "
+                "Unavailable categories are unknown, not zero and not evidence of absence."
             ),
             "no_population_inference": True,
             "no_occupancy_inference": True,
@@ -233,36 +353,46 @@ async def run(args: argparse.Namespace) -> int:
         "limitations": [
             "Day 4 identifies mapped exposure-context candidates; it does not estimate people exposed, occupancy, vulnerability or health risk.",
             "OpenStreetMap completeness and tagging quality vary by place and historical date; absence of a mapped object is not evidence of real-world absence.",
-            "Ways and relations use the Overpass bounding-box center for proximity calculations; that center is a representative point and may not lie inside the mapped geometry.",
-            "Historical alignment uses the provider observation timestamp when available; otherwise the Day-3 source date/time is treated as UTC and explicitly labeled as such.",
+            "HTTP 200 responses containing a non-empty Overpass remark are provider failures, not valid zero-context evidence.",
+            "Provider/network failure is represented per category as unavailable_provider_failure; such categories must not be interpreted as zero exposure context.",
+            "Ways and relations use the Overpass center for proximity calculations; that center is a representative point and may not lie inside the mapped geometry.",
+            "Historical alignment uses the provider observation timestamp when available.",
             "Context categories are deterministic engineering taxonomy labels, not epidemiological weights.",
-            "OpenStreetMap attribution and ODbL license information must remain visible wherever these context data are presented to users or judges.",
+            "OpenStreetMap attribution and ODbL license information must remain visible wherever these context data are presented.",
         ],
     }
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(artifact, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    print("\nHEATSHIELD - DAY 4 EXPOSURE CONTEXT INTELLIGENCE")
-    print("=" * 66)
+    print("\nHEATSHIELD - DAY 4 EXPOSURE CONTEXT INTELLIGENCE v1.2")
+    print("=" * 72)
     print(f"Day-3 artifact SHA-256: {day3_sha}")
     print(f"Historical OSM snapshot: {snapshot_utc.isoformat()} ({snapshot_basis})")
     print(f"Hotspots analyzed: {len(contexts)}")
     print(f"Context radius: {args.radius_meters:.0f} m")
+    print(f"Coverage status: {coverage_status}")
+    print("Observed categories: " + ", ".join(observed_categories))
+    if unavailable_categories:
+        print("Unavailable categories: " + ", ".join(unavailable_categories))
     print(f"Relevant OSM objects fetched: {len(places)}")
     print(f"Unique assigned context places: {len(unique_assigned_refs)}")
-    print(f"Overpass queries this run: {0 if cache_hit else 1}")
-    print(f"Cache hits: {1 if cache_hit else 0}")
+    print(f"Overpass HTTP requests this run: {total_http_requests}")
+    print(f"Semantic error responses rejected: {total_semantic_rejections}")
+    print(f"Cache hits: {total_cache_hits}")
+    if attempted_endpoints:
+        print("Attempted endpoints: " + ", ".join(attempted_endpoints))
     print(f"Attribution: {ATTRIBUTION} | ODbL 1.0")
 
     for context in contexts:
-        print("\n" + "-" * 66)
+        print("\n" + "-" * 72)
         print(f"Rank #{context.hotspot_rank} | tile={context.tile_id}")
         print(f"Context evidence: {context.context_evidence_id}")
         print("Category counts: " + json.dumps(context.category_counts, sort_keys=True))
+        print("Category status: " + json.dumps(context.category_status, sort_keys=True))
         nearest = context.nearby_places[:5]
         if not nearest:
-            print("Nearest mapped context: none observed within radius")
+            print("Nearest mapped context: none observed among successfully queried categories")
         else:
             print("Nearest mapped context candidates:")
             for item in nearest:

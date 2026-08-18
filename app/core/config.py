@@ -12,9 +12,11 @@ class Settings(BaseSettings):
 
     overpass_base_url: str = "https://overpass-api.de/api/interpreter"
     overpass_fallback_url: str = "https://overpass.private.coffee/api/interpreter"
-    overpass_request_timeout_seconds: float = 45.0
+    overpass_third_url: str = "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+    overpass_request_timeout_seconds: float = 55.0
+    overpass_connect_timeout_seconds: float = 12.0
     overpass_user_agent: str = (
-        "HeatShieldAI-Hackathon26/0.4 (+https://github.com/Adil307/Heckathon26)"
+        "HeatShieldAI-Hackathon26/0.4.2 (+https://github.com/Adil307/Heckathon26)"
     )
 
     app_env: str = "development"

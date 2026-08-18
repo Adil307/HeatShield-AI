@@ -48,6 +48,7 @@ class HotspotContext:
     radius_meters: float
     category_counts: dict[str, int]
     nearby_places: tuple[NearbyContextPlace, ...]
+    category_status: dict[str, str] | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -60,6 +61,7 @@ class HotspotContext:
             "representative_longitude": self.representative_longitude,
             "radius_meters": self.radius_meters,
             "category_counts": dict(self.category_counts),
+            "category_status": dict(self.category_status or {}),
             "nearby_place_count": len(self.nearby_places),
             "nearby_places": [item.to_dict() for item in self.nearby_places],
         }

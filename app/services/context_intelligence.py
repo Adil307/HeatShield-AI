@@ -6,10 +6,10 @@ import math
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 from app.domain.context import ContextPlace, HotspotContext, NearbyContextPlace
-from app.services.context_taxonomy import CATEGORY_ORDER, classify_context, overpass_tag_filters
+from app.services.context_taxonomy import CATEGORY_ORDER, classify_context, overpass_filters_for_category
 from app.services.day3_artifact import Day3ContextInput
 
 
@@ -31,8 +31,20 @@ class BoundingBox:
         return f"{self.south:.7f},{self.west:.7f},{self.north:.7f},{self.east:.7f}"
 
 
+@dataclass(frozen=True, slots=True)
+class ContextQueryPlan:
+    category: str
+    query: str
+    query_sha256: str
+
+
 def query_fingerprint(query: str) -> str:
     return hashlib.sha256(query.encode("utf-8")).hexdigest()
+
+
+def query_bundle_fingerprint(plans: Iterable[ContextQueryPlan]) -> str:
+    canonical = "\n".join(f"{plan.category}:{plan.query_sha256}" for plan in plans)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def expanded_bbox(points: Iterable[tuple[float, float]], radius_meters: float) -> BoundingBox:
@@ -45,7 +57,12 @@ def expanded_bbox(points: Iterable[tuple[float, float]], radius_meters: float) -
     latitudes = [lat for lat, _ in point_list]
     longitudes = [lon for _, lon in point_list]
     for lat, lon in point_list:
-        if not math.isfinite(lat) or not math.isfinite(lon) or not -90 <= lat <= 90 or not -180 <= lon <= 180:
+        if (
+            not math.isfinite(lat)
+            or not math.isfinite(lon)
+            or not -90 <= lat <= 90
+            or not -180 <= lon <= 180
+        ):
             raise ContextValidationError("Invalid hotspot coordinate.")
 
     mean_lat = sum(latitudes) / len(latitudes)
@@ -61,25 +78,39 @@ def expanded_bbox(points: Iterable[tuple[float, float]], radius_meters: float) -
     )
 
 
-def build_context_query(
+def build_context_query_bundle(
     hotspots: Iterable[Day3ContextInput],
     *,
     radius_meters: float,
     snapshot_utc: datetime,
-) -> tuple[str, BoundingBox]:
+) -> tuple[tuple[ContextQueryPlan, ...], BoundingBox]:
+    """Build five bounded historical queries instead of one large union query.
+
+    This trades a small number of sequential requests for lower per-query server cost,
+    clearer category-level completeness, and safer partial degradation.
+    """
     selected = list(hotspots)
     bbox = expanded_bbox(((item.latitude, item.longitude) for item in selected), radius_meters)
-
     snapshot = snapshot_utc.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    filters = "\n  ".join(overpass_tag_filters())
-    query = (
-        f'[out:json][timeout:30][date:"{snapshot}"][bbox:{bbox.as_overpass()}];\n'
-        "(\n"
-        f"  {filters}\n"
-        ");\n"
-        "out center tags qt;"
-    )
-    return query, bbox
+
+    plans: list[ContextQueryPlan] = []
+    for category in CATEGORY_ORDER:
+        filters = "\n  ".join(overpass_filters_for_category(category))
+        query = (
+            f'[out:json][timeout:25][date:"{snapshot}"][bbox:{bbox.as_overpass()}];\n'
+            "(\n"
+            f"  {filters}\n"
+            ");\n"
+            "out center tags qt;"
+        )
+        plans.append(
+            ContextQueryPlan(
+                category=category,
+                query=query,
+                query_sha256=query_fingerprint(query),
+            )
+        )
+    return tuple(plans), bbox
 
 
 def _extract_coordinate(element: dict[str, Any]) -> tuple[float, float] | None:
@@ -91,10 +122,20 @@ def _extract_coordinate(element: dict[str, Any]) -> tuple[float, float] | None:
             return None
         lat, lon = center.get("lat"), center.get("lon")
 
-    if isinstance(lat, bool) or isinstance(lon, bool) or not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+    if (
+        isinstance(lat, bool)
+        or isinstance(lon, bool)
+        or not isinstance(lat, (int, float))
+        or not isinstance(lon, (int, float))
+    ):
         return None
     lat_f, lon_f = float(lat), float(lon)
-    if not math.isfinite(lat_f) or not math.isfinite(lon_f) or not -90 <= lat_f <= 90 or not -180 <= lon_f <= 180:
+    if (
+        not math.isfinite(lat_f)
+        or not math.isfinite(lon_f)
+        or not -90 <= lat_f <= 90
+        or not -180 <= lon_f <= 180
+    ):
         return None
     return lat_f, lon_f
 
@@ -107,6 +148,12 @@ def parse_overpass_context(payload: dict[str, Any]) -> tuple[tuple[ContextPlace,
     elements = response.get("elements")
     if not isinstance(elements, list):
         raise ContextValidationError("Overpass response contains no elements list.")
+
+    remark = response.get("remark")
+    if isinstance(remark, str) and remark.strip():
+        raise ContextValidationError(
+            f"Overpass response is not semantically valid: {remark.strip()}"
+        )
 
     osm3s = response.get("osm3s")
     osm_base = osm3s.get("timestamp_osm_base") if isinstance(osm3s, dict) else None
@@ -123,7 +170,11 @@ def parse_overpass_context(payload: dict[str, Any]) -> tuple[tuple[ContextPlace,
         if not isinstance(tags, dict):
             continue
 
-        clean_tags = {str(k): str(v) for k, v in tags.items() if isinstance(k, str) and isinstance(v, (str, int, float))}
+        clean_tags = {
+            str(k): str(v)
+            for k, v in tags.items()
+            if isinstance(k, str) and isinstance(v, (str, int, float))
+        }
         classification = classify_context(clean_tags)
         coordinate = _extract_coordinate(element)
         if classification is None or coordinate is None:
@@ -145,6 +196,14 @@ def parse_overpass_context(payload: dict[str, Any]) -> tuple[tuple[ContextPlace,
 
     places = tuple(sorted(deduped.values(), key=lambda p: (p.osm_type, p.osm_id)))
     return places, osm_base if isinstance(osm_base, str) else None
+
+
+def merge_context_places(groups: Iterable[Iterable[ContextPlace]]) -> tuple[ContextPlace, ...]:
+    deduped: dict[str, ContextPlace] = {}
+    for group in groups:
+        for place in group:
+            deduped[place.osm_ref] = place
+    return tuple(sorted(deduped.values(), key=lambda p: (p.osm_type, p.osm_id)))
 
 
 def haversine_meters(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -199,6 +258,7 @@ def build_hotspot_contexts(
     radius_meters: float,
     day3_sha256: str,
     query_sha256: str,
+    category_status: Mapping[str, str] | None = None,
 ) -> tuple[HotspotContext, ...]:
     selected = tuple(hotspots)
     index = _HotspotSpatialIndex(selected, radius_meters)
@@ -221,10 +281,22 @@ def build_hotspot_contexts(
                     NearbyContextPlace(place=place, distance_meters=round(distance, 2))
                 )
 
+    statuses = {
+        category: (category_status.get(category, "observed") if category_status else "observed")
+        for category in CATEGORY_ORDER
+    }
+
     results: list[HotspotContext] = []
     for hotspot in selected:
         nearby = assignments[hotspot.rank]
-        nearby.sort(key=lambda item: (item.distance_meters, item.place.category, item.place.osm_type, item.place.osm_id))
+        nearby.sort(
+            key=lambda item: (
+                item.distance_meters,
+                item.place.category,
+                item.place.osm_type,
+                item.place.osm_id,
+            )
+        )
         counts_raw = Counter(item.place.category for item in nearby)
         counts = {category: counts_raw.get(category, 0) for category in CATEGORY_ORDER}
         results.append(
@@ -243,16 +315,13 @@ def build_hotspot_contexts(
                 radius_meters=radius_meters,
                 category_counts=counts,
                 nearby_places=tuple(nearby),
+                category_status=dict(statuses),
             )
         )
 
     return tuple(sorted(results, key=lambda item: item.hotspot_rank))
 
 
-def raw_cache_fingerprint(*, query_sha256: str, endpoint_family: str = "osm-overpass") -> str:
-    canonical = json.dumps(
-        {"endpoint_family": endpoint_family, "query_sha256": query_sha256},
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+def raw_cache_fingerprint(*, query_sha256: str, endpoint_family: str = "overpass-global-v2") -> str:
+    raw = f"{endpoint_family}|{query_sha256}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()

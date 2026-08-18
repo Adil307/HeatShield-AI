@@ -105,3 +105,7 @@ HeatShield enriches a small set of Day-2 thermal hotspot candidates with FortyGu
 ## Day 4 - Exposure Context Intelligence
 
 HeatShield links Day-3 thermal/environmental evidence to time-aligned OpenStreetMap context candidates around each hotspot. It uses a single historical bounding-box Overpass query, deterministic context taxonomy, local spatial indexing, exact distance checks, provenance hashes, response caching, and explicit OSM attribution. Day 4 does not infer population counts, occupancy, vulnerability or health risk from mapped-place presence or absence.
+
+## Day 4.2 - Resilient Historical Context Retrieval
+
+Historical OpenStreetMap context retrieval now uses five small category-specific bbox queries, semantic-success validation, sequential failover across three public global/attic Overpass instances, and category-level availability states. Provider failure is represented as unknown/unavailable and is never converted into a zero context count.
