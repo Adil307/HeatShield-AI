@@ -109,3 +109,6 @@ HeatShield links Day-3 thermal/environmental evidence to time-aligned OpenStreet
 ## Day 4.2 - Resilient Historical Context Retrieval
 
 Historical OpenStreetMap context retrieval now uses five small category-specific bbox queries, semantic-success validation, sequential failover across three public global/attic Overpass instances, and category-level availability states. Provider failure is represented as unknown/unavailable and is never converted into a zero context count.
+
+### Day 4.4 - Evidence-Safe Scenario Replay
+When near-current FortyGuard heatmaps completed with zero GeoJSON features, HeatShield did not treat them as zero heat or keep spending credits. The verified historical thermal/environmental event can instead be replayed against current mapped OSM context as an explicitly cross-time planning scenario. Historical hazard, current context, temporal gap, provider availability, and provenance remain separate evidence fields.
