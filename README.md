@@ -120,3 +120,8 @@ Day 5 converts the evidence-safe Day 4.4 scenario replay into a deterministic pl
 ## Day 6 - Verified Vulnerability and Adaptive Capacity Evidence Layer
 
 Day 6 adds a human-in-the-loop operational evidence layer for vulnerability and adaptive capacity. HeatShield never infers exertion, acclimatization, PPE/clothing, hydration, recovery, work-rest controls, or training from OSM, temperature, or an LLM. Unknown factors remain unknown. An evidence-adjusted planning priority is unlocked only when every required factor is explicitly verified, while medical/clinical risk remains outside the model. Day 6 makes no provider/API calls.
+
+## Day 7 - Explainability and Evidence Guard
+
+HeatShield now produces deterministic explanation packets over the verified Day 4.4 -> Day 5 -> Day 6 provenance chain. Each claimable value is classified as observed or derived, while missing evidence remains unknown and policy-blocked outputs remain withheld. The structured Evidence Guard approves only exact ledger-grounded claims, rejects medical-risk probability and semantic overclaims, and requires free-form AI text to be decomposed into structured grounded claims before rendering. Day 7 makes zero provider/API/LLM calls.
+

@@ -12,3 +12,5 @@ data/processed/
 # Local development patch archives
 HeatShield_Day2_*.zip
 data/input/
+
+data/processed/day7_explainability_guard.json
