@@ -130,3 +130,9 @@ HeatShield now produces deterministic explanation packets over the verified Day 
 
 Day 8 adds a deterministic, versioned recommendation catalog grounded in the Day 7 evidence ledger. Actions are emitted only when catalog triggers are satisfied, carry exact triggering evidence and authoritative source IDs, and pass a recommendation guard. Unknown operational factors trigger verification rather than being treated as absent. No provider, Overpass, or LLM calls are required.
 
+
+## Day 9 - Grounded AI Copilot Core
+
+Day 9 adds a conversational copilot over the verified Day 7 evidence ledger and Day 8 controlled recommendation catalog. The safe default is deterministic and makes zero LLM calls. An optional OpenAI Responses API planner can be enabled, but the model may only select whitelisted evidence keys and guard-approved recommendation IDs; it never writes the final factual answer. Final wording is rendered deterministically and every structured claim is rechecked against the Day 7 Claim Guard.
+
+Key safety rules: historical thermal evidence is not current heat; mapped OSM objects are not people/occupancy; medical risk probability is never produced; unknown evidence is not defaulted to zero; actions remain catalog-controlled.

@@ -16,3 +16,7 @@ data/input/
 data/processed/day7_explainability_guard.json
 
 data/processed/day8_controlled_recommendations.json
+data/processed/day9_copilot_demo.json
+INSTALL_DAY*.ps1
+README_DAY*_APPEND.md
+HeatShield_Day*.zip

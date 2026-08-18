@@ -19,6 +19,13 @@ class Settings(BaseSettings):
         "HeatShieldAI-Hackathon26/0.4.2 (+https://github.com/Adil307/Heckathon26)"
     )
 
+    # Day 9 grounded copilot. Deterministic mode is the safe zero-cost default.
+    copilot_provider: str = "deterministic"
+    copilot_model: str = "gpt-5.6"
+    copilot_timeout_seconds: float = 30.0
+    copilot_max_output_tokens: int = 500
+    openai_api_key: str = ""
+
     app_env: str = "development"
 
     model_config = SettingsConfigDict(
@@ -32,6 +39,11 @@ class Settings(BaseSettings):
     def api_key_configured(self) -> bool:
         value = self.fortyguard_api_key.strip()
         return bool(value) and value != "replace_with_your_real_key"
+
+    @property
+    def openai_api_key_configured(self) -> bool:
+        value = self.openai_api_key.strip()
+        return bool(value) and value != "replace_with_your_openai_key"
 
 
 @lru_cache

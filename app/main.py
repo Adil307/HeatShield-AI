@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.routes_copilot import router as copilot_router
 from app.api.routes_decision import router as decision_router
 from app.api.routes_fortyguard import router as fortyguard_router
 
@@ -19,6 +20,12 @@ app.include_router(
     decision_router,
     prefix="/api/v1/decision",
     tags=["Decision Intelligence"],
+)
+
+app.include_router(
+    copilot_router,
+    prefix="/api/v1/copilot",
+    tags=["Grounded Copilot"],
 )
 
 
