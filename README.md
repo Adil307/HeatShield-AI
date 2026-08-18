@@ -101,3 +101,7 @@ See `docs/day-02-hotspot-intelligence.md` for design boundaries, complexity, pro
 ## Day 3 - Environmental Thermal Context
 
 HeatShield enriches a small set of Day-2 thermal hotspot candidates with FortyGuard environmental parameters. The pipeline verifies Day-1/Day-2 provenance, derives a representative point per tile, uses deterministic request fingerprints and local completed-response caching, and links environmental evidence back to each thermal evidence ID. Day 3 preserves the distinction between observed provider values and transparent derived metadata; it does not yet claim population or clinical heat risk.
+
+## Day 4 - Exposure Context Intelligence
+
+HeatShield links Day-3 thermal/environmental evidence to time-aligned OpenStreetMap context candidates around each hotspot. It uses a single historical bounding-box Overpass query, deterministic context taxonomy, local spatial indexing, exact distance checks, provenance hashes, response caching, and explicit OSM attribution. Day 4 does not infer population counts, occupancy, vulnerability or health risk from mapped-place presence or absence.
