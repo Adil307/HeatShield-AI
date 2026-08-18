@@ -97,3 +97,7 @@ Next milestone: **Day 2 — Heatmap parser + GeoJSON validation + hotspot extrac
 HeatShield validates completed FortyGuard GeoJSON, independently verifies temperature statistics, and derives deterministic AOI-relative hotspot candidates with SHA-256-linked evidence IDs. The bounded top-k detector runs in O(n log k) selection time and intentionally does not claim human heat risk yet.
 
 See `docs/day-02-hotspot-intelligence.md` for design boundaries, complexity, provenance, and failure behavior.
+
+## Day 3 - Environmental Thermal Context
+
+HeatShield enriches a small set of Day-2 thermal hotspot candidates with FortyGuard environmental parameters. The pipeline verifies Day-1/Day-2 provenance, derives a representative point per tile, uses deterministic request fingerprints and local completed-response caching, and links environmental evidence back to each thermal evidence ID. Day 3 preserves the distinction between observed provider values and transparent derived metadata; it does not yet claim population or clinical heat risk.

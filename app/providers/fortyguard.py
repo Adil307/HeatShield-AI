@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import time
 from typing import Any
@@ -5,7 +7,7 @@ from typing import Any
 import httpx
 
 from app.core.config import Settings
-from app.schemas.fortyguard import HeatmapRequest
+from app.schemas.fortyguard import EnvironmentalParametersRequest, HeatmapRequest
 
 
 class FortyGuardError(RuntimeError):
@@ -78,6 +80,16 @@ class FortyGuardClient:
         return await self._request(
             "POST",
             "/v1/heatmap",
+            json_body=request.to_provider_payload(),
+        )
+
+    async def submit_environmental_parameters(
+        self,
+        request: EnvironmentalParametersRequest,
+    ) -> dict[str, Any]:
+        return await self._request(
+            "POST",
+            "/v1/env_params",
             json_body=request.to_provider_payload(),
         )
 

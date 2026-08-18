@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.core.config import get_settings
 from app.providers.fortyguard import FortyGuardClient, FortyGuardError
-from app.schemas.fortyguard import HeatmapRequest
+from app.schemas.fortyguard import EnvironmentalParametersRequest, HeatmapRequest
 
 router = APIRouter()
 
@@ -40,6 +40,14 @@ async def submit_heatmap(request: HeatmapRequest) -> dict:
         raise provider_http_error(exc)
 
 
+@router.post("/environment/submit")
+async def submit_environmental_parameters(request: EnvironmentalParametersRequest) -> dict:
+    try:
+        return await make_client().submit_environmental_parameters(request)
+    except FortyGuardError as exc:
+        raise provider_http_error(exc)
+
+
 @router.get("/status/{activity_id}")
 async def get_status(activity_id: str) -> dict:
     try:
@@ -50,24 +58,33 @@ async def get_status(activity_id: str) -> dict:
 
 @router.post("/heatmap/run")
 async def run_heatmap(request: HeatmapRequest) -> dict:
-    # Development convenience endpoint:
-    # submit -> activity_id -> poll -> return completed result.
     try:
         client = make_client()
         submitted = await client.submit_heatmap(request)
-
         activity_id = (submitted.get("data") or {}).get("activity_id")
         if not activity_id:
             raise FortyGuardError(
                 "Submission returned no activity_id.",
                 response_body=submitted,
             )
-
         completed = await client.wait_for_completion(activity_id)
+        return {"submission": submitted, "completion": completed}
+    except FortyGuardError as exc:
+        raise provider_http_error(exc)
 
-        return {
-            "submission": submitted,
-            "completion": completed,
-        }
+
+@router.post("/environment/run")
+async def run_environmental_parameters(request: EnvironmentalParametersRequest) -> dict:
+    try:
+        client = make_client()
+        submitted = await client.submit_environmental_parameters(request)
+        activity_id = (submitted.get("data") or {}).get("activity_id")
+        if not activity_id:
+            raise FortyGuardError(
+                "Environmental submission returned no activity_id.",
+                response_body=submitted,
+            )
+        completed = await client.wait_for_completion(activity_id)
+        return {"submission": submitted, "completion": completed}
     except FortyGuardError as exc:
         raise provider_http_error(exc)
