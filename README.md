@@ -112,3 +112,7 @@ Historical OpenStreetMap context retrieval now uses five small category-specific
 
 ### Day 4.4 - Evidence-Safe Scenario Replay
 When near-current FortyGuard heatmaps completed with zero GeoJSON features, HeatShield did not treat them as zero heat or keep spending credits. The verified historical thermal/environmental event can instead be replayed against current mapped OSM context as an explicitly cross-time planning scenario. Historical hazard, current context, temporal gap, provider availability, and provenance remain separate evidence fields.
+
+## Day 5 - Transparent Planning Priority Engine
+
+Day 5 converts the evidence-safe Day 4.4 scenario replay into a deterministic planning-priority ranking. It uses an NWS-anchored heat-index hazard ordinal, capped mapped-context exposure, and a conservative place-type sensitivity proxy. Individual vulnerability and adaptive capacity remain unknown unless directly verified, so HeatShield intentionally withholds a final medical/risk score. The engine records factor explanations, evidence IDs, alternative weight sets, and ranking stability without making new network calls.

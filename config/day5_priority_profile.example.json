@@ -1,0 +1,10 @@
+{
+  "schema_version": "heatshield.day5.verified_context_profile.example.v1",
+  "purpose": "Future verified vulnerability/adaptive-capacity evidence only. Day 5 v1 does not consume this file automatically.",
+  "rules": [
+    "Do not enter guessed population counts.",
+    "Do not infer medical vulnerability from a place name alone.",
+    "Adaptive-capacity values require evidence such as verified shade, cooling, hydration, operating controls, or asset data.",
+    "Every future value should include a source/provenance reference."
+  ]
+}
