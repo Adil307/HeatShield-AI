@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+.DS_Store
+.vscode/
+data/raw/
+data/cache/
+data/processed/
+
+# Local development patch archives
+HeatShield_Day2_*.zip
