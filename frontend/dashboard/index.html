@@ -1,70 +1,296 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="HeatShield AI — explainable heat-priority intelligence." />
-  <title>HeatShield AI</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="HeatShield AI — explainable heat-priority intelligence powered by FortyGuard evidence and a grounded local AI copilot." />
+  <title>HeatShield AI — Urban Heat Decision Intelligence</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><div class="mark">HS</div><div><small>GLOBAL AI HACKATHON '26</small><h1>HeatShield AI</h1></div></div>
-    <div class="chips"><span>FortyGuard Evidence</span><span>Scenario Replay</span><span id="copilotStatus">Checking Local AI…</span></div>
-  </header>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand-lockup">
+        <div class="brand-mark">HS</div>
+        <div>
+          <strong>HeatShield AI</strong>
+          <span>Decision Intelligence</span>
+        </div>
+      </div>
 
-  <main>
-    <section class="hero">
-      <p class="eyebrow">DECISION INTELLIGENCE FOR URBAN HEAT</p>
-      <h2>Temperature tells you where it is hot.<br><b>HeatShield tells you what deserves attention.</b></h2>
-      <p>Verified thermal evidence, transparent planning priority, controlled actions, and a grounded local AI copilot.</p>
-    </section>
+      <nav class="nav">
+        <button class="nav-item active" data-section="overview">
+          <span class="nav-icon">◫</span>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" data-section="evidence">
+          <span class="nav-icon">◎</span>
+          <span>Evidence</span>
+        </button>
+        <button class="nav-item" data-section="actions">
+          <span class="nav-icon">↗</span>
+          <span>Actions</span>
+        </button>
+        <button class="nav-item" id="openCopilotNav">
+          <span class="nav-icon">✦</span>
+          <span>AI Copilot</span>
+        </button>
+      </nav>
 
-    <section class="scope"><strong>Evidence scope</strong><span id="scopeText">Loading verified scenario scope…</span></section>
+      <div class="sidebar-bottom">
+        <div class="source-card">
+          <span class="source-dot"></span>
+          <div>
+            <small>THERMAL SOURCE</small>
+            <strong>FortyGuard</strong>
+            <span>Verified evidence layer</span>
+          </div>
+        </div>
+        <div class="hackathon-label">GLOBAL AI HACKATHON '26</div>
+      </div>
+    </aside>
 
-    <section class="kpis">
-      <article><span>Priority Hotspots</span><strong id="kpiHotspots">—</strong><small>Top decision candidates</small></article>
-      <article><span>Highest Priority</span><strong id="kpiPriority">—</strong><small id="kpiPriorityRank">Verified planning order</small></article>
-      <article><span>Historical Peak Air Temp</span><strong id="kpiTemp">—</strong><small>FortyGuard scenario evidence</small></article>
-      <article><span>Heatmap Evidence</span><strong id="kpiTiles">—</strong><small>Provider GeoJSON tiles</small></article>
-    </section>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">URBAN HEAT PRIORITY COMMAND CENTER</p>
+          <h1>HeatShield Operations</h1>
+        </div>
+        <div class="top-actions">
+          <span class="scope-chip">Scenario Replay</span>
+          <span class="source-chip"><i></i> FortyGuard Evidence</span>
+          <button id="openCopilotTop" class="copilot-top-btn">✦ Ask Copilot</button>
+        </div>
+      </header>
 
-    <section class="grid main-grid">
-      <article class="panel map-panel">
-        <div class="panel-head"><div><small>THERMAL FIELD</small><h3>FortyGuard Heatmap + Priority Hotspots</h3></div><div class="legend"><span>Lower</span><i></i><span>Higher</span></div></div>
-        <div class="map-wrap"><svg id="heatmapSvg" viewBox="0 0 900 520"></svg><div id="mapEmpty" class="empty hidden">Local heatmap geometry unavailable. Priority evidence remains available.</div><div id="mapTooltip" class="tooltip hidden"></div></div>
-        <div class="footnote">Historical thermal evidence • Current mapped context • Planning priority ≠ medical risk</div>
-      </article>
+      <div class="scope-banner">
+        <div class="scope-copy">
+          <span class="scope-label">EVIDENCE SCOPE</span>
+          <strong id="scopeText">Loading verified scenario scope…</strong>
+        </div>
+        <div class="scope-meta">
+          <span>Historical thermal evidence</span>
+          <b>+</b>
+          <span>Current mapped context</span>
+          <b>→</b>
+          <span>Planning priority</span>
+        </div>
+      </div>
 
-      <article class="panel">
-        <div class="panel-head"><div><small>DECISION ORDER</small><h3>Priority Ranking</h3></div></div>
-        <div id="rankingList" class="ranking"></div>
-      </article>
-    </section>
+      <section class="kpi-row">
+        <article class="kpi">
+          <div class="kpi-label">Priority hotspots</div>
+          <div class="kpi-value" id="kpiHotspots">—</div>
+          <div class="kpi-foot">Ranked decision candidates</div>
+        </article>
+        <article class="kpi primary">
+          <div class="kpi-label">Highest planning priority</div>
+          <div class="kpi-value" id="kpiPriority">—</div>
+          <div class="kpi-foot" id="kpiPriorityRank">Verified planning order</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-label">Historical peak air temp</div>
+          <div class="kpi-value" id="kpiTemp">—</div>
+          <div class="kpi-foot">FortyGuard scenario evidence</div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-label">Heatmap evidence tiles</div>
+          <div class="kpi-value" id="kpiTiles">—</div>
+          <div class="kpi-foot">GeoJSON provider features</div>
+        </article>
+      </section>
 
-    <section class="grid detail-grid">
-      <article class="panel">
-        <div class="panel-head"><div><small>SELECTED HOTSPOT</small><h3 id="detailTitle">Hotspot —</h3></div><span id="detailBand" class="pill">—</span></div>
-        <div class="score-row"><div class="ring" id="scoreRing"><div><strong id="priorityScore">—</strong><span>/100</span></div></div><div><span class="muted">Pre-adaptation planning priority</span><p id="priorityExplanation">Select a hotspot to inspect verified evidence.</p></div></div>
-        <div id="metricGrid" class="metrics"></div>
-        <div class="evidence"><div><span>Operational vulnerability</span><strong id="vulnStatus">—</strong></div><div><span>Adaptive capacity</span><strong id="capacityStatus">—</strong></div><div><span>Medical risk probability</span><strong id="medicalStatus">—</strong></div></div>
-      </article>
+      <section class="command-grid" id="overviewSection">
+        <article class="card map-card">
+          <div class="card-header">
+            <div>
+              <span class="section-kicker">THERMAL FIELD</span>
+              <h2>FortyGuard Heatmap</h2>
+              <p>Verified historical thermal surface with priority hotspots layered on top.</p>
+            </div>
+            <div class="heat-legend">
+              <span>Cooler</span>
+              <div class="heat-gradient"></div>
+              <span>Hotter</span>
+            </div>
+          </div>
 
-      <article class="panel">
-        <div class="panel-head"><div><small>CONTROLLED ACTIONS</small><h3>What to verify or assess next</h3></div></div>
-        <div id="actionList" class="actions"></div>
-      </article>
-    </section>
+          <div class="map-stage">
+            <svg id="heatmapSvg" viewBox="0 0 1000 620" aria-label="HeatShield thermal field"></svg>
+            <div class="map-watermark">FORTYGUARD THERMAL EVIDENCE</div>
+            <div class="map-toolbar">
+              <span>Scenario Replay</span>
+              <span class="separator"></span>
+              <span>150 verified tiles</span>
+            </div>
+            <div id="mapEmpty" class="map-empty hidden">Heatmap geometry unavailable. Decision evidence remains intact.</div>
+            <div id="mapTooltip" class="map-tooltip hidden"></div>
+          </div>
 
-    <section class="panel copilot">
-      <div class="copilot-head"><div><small>LOCAL GROUNDED AI</small><h3>HeatShield Copilot</h3><p>Qwen routes intent locally. Deterministic HeatShield evidence writes the factual answer.</p></div><span class="local" id="copilotModel">Local Qwen</span></div>
-      <div class="quick"><button data-prompt="Why is hotspot 2 high priority?">Why priority?</button><button data-prompt="Compare the hotspots">Compare hotspots</button><button data-prompt="What actions should we consider for hotspot 2?">Controlled actions</button><button data-prompt="What evidence is missing for hotspot 2?">Missing evidence</button></div>
-      <div id="chatWindow" class="chat"><div class="msg ai"><small>HEATSHIELD</small><p>Ask about verified priorities, historical thermal metrics, missing evidence, comparisons, or controlled actions.</p></div></div>
-      <form id="copilotForm"><input id="copilotInput" maxlength="2000" placeholder="Ask HeatShield about the selected hotspot…" /><button id="sendButton">Ask Copilot</button></form>
-    </section>
-  </main>
+          <div class="map-caption">
+            <span><i class="dot mint"></i> Priority hotspot</span>
+            <span><i class="dot blue"></i> Historical thermal evidence</span>
+            <span><i class="dot amber"></i> Planning priority ≠ medical risk</span>
+          </div>
+        </article>
 
-  <footer><span>HeatShield AI • FortyGuard thermal evidence • Evidence-constrained local AI</span><span id="provenanceHash">Evidence lineage loading…</span></footer>
+        <aside class="right-column">
+          <article class="card priority-card">
+            <div class="card-header compact">
+              <div>
+                <span class="section-kicker">DECISION ORDER</span>
+                <h2>Priority Ranking</h2>
+              </div>
+              <span class="mini-badge">Verified</span>
+            </div>
+            <div id="rankingList" class="ranking-list"></div>
+          </article>
+
+          <article class="card selected-card">
+            <div class="selected-top">
+              <div>
+                <span class="section-kicker">SELECTED HOTSPOT</span>
+                <h2 id="detailTitle">Hotspot —</h2>
+              </div>
+              <span id="detailBand" class="priority-band">—</span>
+            </div>
+
+            <div class="selected-score-row">
+              <div class="score-ring" id="scoreRing">
+                <div>
+                  <strong id="priorityScore">—</strong>
+                  <span>/100</span>
+                </div>
+              </div>
+              <div class="score-summary">
+                <small>Pre-adaptation planning priority</small>
+                <p id="priorityExplanation">Select a hotspot to inspect its verified score.</p>
+              </div>
+            </div>
+
+            <div class="compact-metrics" id="compactMetricGrid"></div>
+
+            <button class="detail-link" data-section-jump="evidence">View full evidence →</button>
+          </article>
+        </aside>
+      </section>
+
+      <section class="deep-section" id="evidenceSection">
+        <div class="section-title-row">
+          <div>
+            <span class="section-kicker">EXPLAINABILITY</span>
+            <h2>Evidence behind the priority</h2>
+            <p>Every displayed value is sourced from the verified HeatShield evidence chain.</p>
+          </div>
+          <span id="evidenceHash" class="hash-badge">SHA loading…</span>
+        </div>
+
+        <div class="evidence-grid">
+          <article class="card evidence-metrics-card">
+            <div class="card-header compact">
+              <div>
+                <span class="section-kicker">THERMAL + CONTEXT METRICS</span>
+                <h2>Verified metrics</h2>
+              </div>
+            </div>
+            <div id="metricGrid" class="metric-grid"></div>
+          </article>
+
+          <article class="card status-card">
+            <div class="card-header compact">
+              <div>
+                <span class="section-kicker">EVIDENCE COMPLETENESS</span>
+                <h2>What is known vs withheld</h2>
+              </div>
+            </div>
+            <div class="status-list">
+              <div class="status-row">
+                <div>
+                  <strong>Operational vulnerability</strong>
+                  <span>Requires verified operator evidence</span>
+                </div>
+                <span id="vulnStatus" class="status-pill unknown">UNKNOWN</span>
+              </div>
+              <div class="status-row">
+                <div>
+                  <strong>Adaptive capacity</strong>
+                  <span>Requires verified controls evidence</span>
+                </div>
+                <span id="capacityStatus" class="status-pill unknown">UNKNOWN</span>
+              </div>
+              <div class="status-row">
+                <div>
+                  <strong>Medical risk probability</strong>
+                  <span>Intentionally not produced by HeatShield</span>
+                </div>
+                <span id="medicalStatus" class="status-pill withheld">WITHHELD</span>
+              </div>
+            </div>
+            <div class="safety-note">
+              HeatShield prioritizes planning attention. It does not convert this score into a clinical probability.
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="deep-section" id="actionsSection">
+        <div class="section-title-row">
+          <div>
+            <span class="section-kicker">CONTROLLED RESPONSE</span>
+            <h2>Recommended verification & assessment actions</h2>
+            <p>Catalog-controlled actions only. No uncatalogued intervention claims.</p>
+          </div>
+        </div>
+        <div id="actionList" class="action-grid"></div>
+      </section>
+
+      <footer class="footer">
+        <span>HeatShield AI • Evidence-constrained decision intelligence</span>
+        <span id="provenanceHash">Evidence lineage loading…</span>
+      </footer>
+    </main>
+
+    <div id="copilotBackdrop" class="drawer-backdrop hidden"></div>
+    <aside id="copilotDrawer" class="copilot-drawer" aria-hidden="true">
+      <div class="drawer-head">
+        <div>
+          <span class="section-kicker">LOCAL GROUNDED AI</span>
+          <h2>HeatShield Copilot</h2>
+          <p>Qwen routes intent locally. Deterministic HeatShield evidence writes the factual answer.</p>
+        </div>
+        <button id="closeCopilot" class="icon-button">×</button>
+      </div>
+
+      <div class="copilot-status-row">
+        <span class="live-dot"></span>
+        <span id="copilotStatus">Checking Local Qwen…</span>
+        <span id="copilotModel" class="model-chip">qwen3:1.7b</span>
+      </div>
+
+      <div class="prompt-grid">
+        <button data-prompt="Why is hotspot 2 high priority?">Why priority?</button>
+        <button data-prompt="Compare the hotspots">Compare hotspots</button>
+        <button data-prompt="What actions should we consider for hotspot 2?">Controlled actions</button>
+        <button data-prompt="What evidence is missing for hotspot 2?">Missing evidence</button>
+      </div>
+
+      <div id="chatWindow" class="chat-window">
+        <div class="message assistant">
+          <div class="message-label">HEATSHIELD</div>
+          <p>Ask about verified priorities, historical thermal metrics, comparisons, missing evidence, or controlled actions.</p>
+        </div>
+      </div>
+
+      <form id="copilotForm" class="copilot-form">
+        <textarea id="copilotInput" maxlength="2000" rows="3" placeholder="Ask about the selected hotspot…"></textarea>
+        <div class="composer-foot">
+          <span>Grounded by verified evidence</span>
+          <button type="submit" id="sendButton">Ask Copilot</button>
+        </div>
+      </form>
+    </aside>
+  </div>
+
   <script src="./app.js"></script>
 </body>
 </html>
