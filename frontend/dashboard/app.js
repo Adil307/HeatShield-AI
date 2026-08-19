@@ -1,4 +1,4 @@
-const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, activeView:"overview" };
+const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview" };
 const $ = (id) => document.getElementById(id);
 const fmt = (v,d=1) => typeof v === "number" && Number.isFinite(v) ? v.toFixed(d) : "—";
 const metric = (v,s="",d=1) => typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(d)}${s}` : "—";
@@ -68,11 +68,62 @@ function activateView(view,{updateHash=true}={}){
   if(view==="copilot") setTimeout(()=>$("copilotInput")?.focus(),80);
 }
 
+
+function syncBasemapButtons(){
+  const satellite=$("satelliteBasemapButton"),streets=$("streetBasemapButton"),status=$("basemapStatus");
+  satellite?.classList.toggle("active",state.activeBasemap==="satellite");
+  streets?.classList.toggle("active",state.activeBasemap==="streets");
+  if(status) status.textContent=state.activeBasemap==="satellite"?"Satellite basemap":"Street basemap";
+}
+
+function setBasemap(mode){
+  if(!state.map)return;
+  const requested=mode==="streets"?"streets":"satellite";
+  const target=requested==="satellite"?state.satelliteLayer:state.streetLayer;
+  const other=requested==="satellite"?state.streetLayer:state.satelliteLayer;
+  if(other&&state.map.hasLayer(other))state.map.removeLayer(other);
+  if(target&&!state.map.hasLayer(target))target.addTo(state.map);
+  state.activeBasemap=requested;
+  syncBasemapButtons();
+}
+
+function ensureBasemaps(){
+  if(!state.map||state.satelliteLayer||state.streetLayer)return;
+
+  state.satelliteLayer=L.tileLayer(
+    "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    {
+      maxZoom:19,
+      attribution:"Tiles &copy; Esri"
+    }
+  );
+
+  state.streetLayer=L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom:19,
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }
+  );
+
+  let satelliteErrors=0;
+  state.satelliteLayer.on("tileerror",()=>{
+    satelliteErrors+=1;
+    if(satelliteErrors>=4&&state.activeBasemap==="satellite"){
+      setBasemap("streets");
+      const status=$("basemapStatus");
+      if(status)status.textContent="Satellite unavailable · Streets fallback";
+    }
+  });
+
+  setBasemap("satellite");
+}
+
 function renderMap(){
   const geo=state.snapshot?.heatmap_geojson, fallback=$("mapFallback");
   if(!geo?.features?.length||typeof L==="undefined"){$("thermalMap").classList.add("hidden");fallback.classList.remove("hidden");return;}
   $("thermalMap").classList.remove("hidden");fallback.classList.add("hidden");
-  if(!state.map){state.map=L.map("thermalMap",{zoomControl:true,attributionControl:true,preferCanvas:true});L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(state.map);}
+  if(!state.map){state.map=L.map("thermalMap",{zoomControl:true,attributionControl:true,preferCanvas:true});ensureBasemaps();}else{ensureBasemaps();}
   if(state.polygonLayer)state.map.removeLayer(state.polygonLayer);if(state.heatLayer)state.map.removeLayer(state.heatLayer);if(state.markerLayer)state.map.removeLayer(state.markerLayer);
   const vals=geo.features.map(featureTemperature).filter(Number.isFinite),min=vals.length?Math.min(...vals):0,max=vals.length?Math.max(...vals):1,span=Math.max(max-min,1e-9);
   state.polygonLayer=L.geoJSON(geo,{style:()=>({color:"#5C6C82",weight:.35,fillColor:"#6E63F0",fillOpacity:.035}),onEachFeature:(f,layer)=>{const tile=tileIdOf(f),temp=featureTemperature(f);layer.bindTooltip(`<strong>Tile ${tile??"—"}</strong><br>${Number.isFinite(temp)?`${temp.toFixed(2)} °C historical air temperature`:"Verified FortyGuard thermal evidence"}`,{sticky:true,direction:"top"});}}).addTo(state.map);
@@ -117,5 +168,7 @@ function queryForIntent(intent){
 }
 document.querySelectorAll("[data-intent]").forEach(button=>button.addEventListener("click",()=>askCopilot(queryForIntent(button.dataset.intent))));
 $("copilotForm")?.addEventListener("submit",event=>{event.preventDefault();const input=$("copilotInput"),q=input.value.trim();if(!q)return;input.value="";askCopilot(q);});
+$("satelliteBasemapButton")?.addEventListener("click",()=>setBasemap("satellite"));
+$("streetBasemapButton")?.addEventListener("click",()=>setBasemap("streets"));
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(VIEW_COPY[view])activateView(view,{updateHash:false});});
 init();

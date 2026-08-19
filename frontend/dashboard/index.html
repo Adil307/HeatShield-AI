@@ -612,12 +612,440 @@
     .context-line{gap:12px;}
     .section-title{font-size:15px;}
   }
+
+
+  /* ---------- DAY 10.7 PREMIUM NAVIGATION + SATELLITE MAP ---------- */
+  :root{
+    --sidebar-bg-1:#081420;
+    --sidebar-bg-2:#0A1724;
+    --surface-glass:rgba(15,27,42,.78);
+    --surface-glass-strong:rgba(17,31,48,.92);
+    --accent-2:#4D8DFF;
+    --accent-line:rgba(110,99,240,.72);
+    --sidebar-shadow:0 20px 60px rgba(0,0,0,.28);
+  }
+
+  body{
+    background:
+      radial-gradient(circle at 82% 0%, rgba(78,88,180,.08), transparent 26%),
+      var(--bg-canvas);
+  }
+
+  .sidebar{
+    background:
+      linear-gradient(180deg,rgba(13,29,44,.97),rgba(7,18,29,.99)),
+      var(--bg-surface);
+    border-right:1px solid rgba(95,116,145,.20);
+    box-shadow:var(--sidebar-shadow);
+    padding:18px 14px 16px;
+    overflow:hidden;
+  }
+
+  .sidebar::before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto 0;
+    height:120px;
+    pointer-events:none;
+    background:radial-gradient(circle at 15% 0%,rgba(110,99,240,.16),transparent 72%);
+  }
+
+  .brand{
+    position:relative;
+    z-index:1;
+    padding:10px 10px 18px;
+    gap:11px;
+    border-bottom:1px solid rgba(83,105,133,.16);
+    margin-bottom:12px;
+  }
+
+  .brand svg{
+    width:30px;
+    height:30px;
+    filter:drop-shadow(0 5px 12px rgba(110,99,240,.22));
+  }
+
+  .brand-text .name{
+    font-size:14.5px;
+    letter-spacing:-.015em;
+    font-weight:650;
+  }
+
+  .brand-text .powered{
+    margin-top:2px;
+    color:#73869e;
+    font-size:9.5px;
+    line-height:1.25;
+  }
+
+  .nav-section-label{
+    position:relative;
+    z-index:1;
+    padding:6px 10px 7px;
+    color:#53677f;
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+
+  .nav{
+    position:relative;
+    z-index:1;
+    gap:6px;
+    margin-top:0;
+  }
+
+  .nav .nav-link{
+    position:relative;
+    width:100%;
+    min-height:42px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 11px;
+    background:transparent;
+    border:1px solid transparent;
+    border-radius:11px;
+    color:#8799af;
+    font-size:12.5px;
+    font-weight:560;
+    text-align:left;
+    box-shadow:none;
+    overflow:hidden;
+    transition:
+      color .18s ease,
+      background .18s ease,
+      border-color .18s ease,
+      transform .18s ease,
+      box-shadow .18s ease;
+  }
+
+  .nav .nav-link svg{
+    width:17px;
+    height:17px;
+    flex:0 0 17px;
+    color:#7288a3;
+    opacity:1;
+    transition:color .18s ease,transform .18s ease;
+  }
+
+  .nav .nav-link::after{
+    content:"";
+    position:absolute;
+    left:0;
+    top:9px;
+    bottom:9px;
+    width:2px;
+    border-radius:4px;
+    background:linear-gradient(180deg,var(--accent),var(--accent-2));
+    opacity:0;
+    transform:scaleY(.45);
+    transition:opacity .18s ease,transform .18s ease;
+  }
+
+  .nav .nav-link:hover{
+    color:#dce7f4;
+    background:rgba(255,255,255,.035);
+    border-color:rgba(106,130,159,.17);
+    transform:translateX(2px);
+  }
+
+  .nav .nav-link:hover svg{
+    color:#a8b8cb;
+    transform:scale(1.04);
+  }
+
+  .nav .nav-link.active{
+    color:#f1f5fb;
+    background:
+      linear-gradient(90deg,rgba(110,99,240,.20),rgba(77,141,255,.07) 72%,rgba(77,141,255,.02));
+    border-color:rgba(110,99,240,.30);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.035),
+      0 10px 28px rgba(0,0,0,.12);
+  }
+
+  .nav .nav-link.active::after{
+    opacity:1;
+    transform:scaleY(1);
+  }
+
+  .nav .nav-link.active svg{
+    color:#9f96ff;
+  }
+
+  .thermal-source{
+    border-top:1px solid rgba(83,105,133,.16);
+    padding:14px 8px 0;
+  }
+
+  .ts-row{
+    padding:10px;
+    border:1px solid rgba(79,104,134,.16);
+    background:rgba(255,255,255,.018);
+    border-radius:10px;
+  }
+
+  .command-bar{
+    min-height:60px;
+    height:60px;
+    background:rgba(8,20,32,.92);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(86,108,135,.18);
+  }
+
+  .cb-right{
+    gap:8px;
+  }
+
+  .cb-right .chip,
+  .cb-right .btn-ghost,
+  .cb-right .btn-primary{
+    min-height:34px;
+    border-radius:9px;
+    padding:7px 12px;
+    border:1px solid rgba(97,121,151,.24);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+  }
+
+  .cb-right .chip{
+    background:rgba(16,32,47,.58);
+  }
+
+  .cb-right .chip.verified{
+    color:#4bd7aa;
+    background:rgba(47,191,143,.075);
+    border-color:rgba(47,191,143,.28);
+  }
+
+  .cb-right .btn-ghost{
+    background:rgba(15,29,44,.58);
+    color:#9aabc0;
+  }
+
+  .cb-right .btn-ghost:hover{
+    background:rgba(24,40,58,.86);
+    color:#e6edf6;
+    border-color:rgba(110,99,240,.52);
+    transform:translateY(-1px);
+  }
+
+  .cb-right .btn-primary{
+    gap:7px;
+    background:linear-gradient(135deg,#6259e9,#6e63f0 55%,#5b7bf3);
+    border-color:rgba(142,132,255,.58);
+    box-shadow:0 8px 24px rgba(78,73,183,.20),inset 0 1px 0 rgba(255,255,255,.10);
+  }
+
+  .cb-right .btn-primary:hover{
+    filter:none;
+    transform:translateY(-1px);
+    box-shadow:0 11px 30px rgba(78,73,183,.27),inset 0 1px 0 rgba(255,255,255,.12);
+  }
+
+  .kpi-card,.a-card,.hotspot-panel,.evidence-card,.completeness-card{
+    border-color:rgba(77,101,131,.22);
+    box-shadow:0 12px 32px rgba(0,0,0,.08);
+  }
+
+  .map-panel{
+    border-color:rgba(94,119,149,.28);
+    box-shadow:0 18px 52px rgba(0,0,0,.24);
+    background:#06101a;
+  }
+
+  .map-panel::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:450;
+    pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.018),inset 0 -90px 110px rgba(4,11,18,.08);
+  }
+
+  .map-panel .leaflet-tile{
+    filter:none !important;
+  }
+
+  .map-controls{
+    top:14px;
+    left:14px;
+    right:auto;
+    align-items:center;
+    gap:8px;
+  }
+
+  .map-layer-label{
+    min-height:36px;
+    padding:8px 11px;
+    border-radius:10px;
+    background:rgba(7,17,29,.86);
+    border-color:rgba(116,139,169,.24);
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    backdrop-filter:blur(12px);
+    color:#d7e1ee;
+    font-weight:550;
+  }
+
+  .map-chip-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#e8543a;
+    box-shadow:0 0 0 4px rgba(232,84,58,.12);
+  }
+
+  .basemap-switch{
+    display:inline-flex;
+    align-items:center;
+    padding:3px;
+    gap:2px;
+    border-radius:10px;
+    background:rgba(7,17,29,.88);
+    border:1px solid rgba(116,139,169,.24);
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    backdrop-filter:blur(12px);
+  }
+
+  .basemap-button{
+    min-height:29px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 9px;
+    border:0;
+    border-radius:7px;
+    background:transparent;
+    color:#8193a8;
+    font-size:10.5px;
+    font-weight:600;
+    transition:background .16s ease,color .16s ease,box-shadow .16s ease;
+  }
+
+  .basemap-button:hover{
+    color:#e7eef7;
+    background:rgba(255,255,255,.045);
+  }
+
+  .basemap-button.active{
+    color:#f5f7fb;
+    background:linear-gradient(135deg,rgba(110,99,240,.92),rgba(78,105,229,.90));
+    box-shadow:0 5px 14px rgba(67,62,158,.25);
+  }
+
+  .basemap-status{
+    position:absolute;
+    right:14px;
+    top:14px;
+    z-index:520;
+    min-height:32px;
+    display:flex;
+    align-items:center;
+    padding:7px 10px;
+    border-radius:999px;
+    background:rgba(7,17,29,.82);
+    border:1px solid rgba(116,139,169,.21);
+    color:#9eb0c6;
+    font-size:9.5px;
+    font-weight:600;
+    backdrop-filter:blur(10px);
+    box-shadow:0 8px 22px rgba(0,0,0,.16);
+  }
+
+  .map-legend{
+    background:rgba(7,17,29,.88);
+    border-color:rgba(116,139,169,.22);
+    box-shadow:0 10px 28px rgba(0,0,0,.20);
+    backdrop-filter:blur(12px);
+  }
+
+  .map-note{
+    background:rgba(7,17,29,.82);
+    border-color:rgba(116,139,169,.18);
+    color:#8da0b7;
+    backdrop-filter:blur(10px);
+  }
+
+  .leaflet-control-zoom{
+    border:0 !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.22) !important;
+  }
+
+  .leaflet-control-zoom a{
+    width:34px !important;
+    height:34px !important;
+    line-height:32px !important;
+    background:rgba(7,17,29,.90)!important;
+    color:#dfe8f3!important;
+    border-color:rgba(116,139,169,.18)!important;
+  }
+
+  .leaflet-control-zoom a:hover{
+    background:#142438!important;
+    color:#fff!important;
+  }
+
+  .leaflet-control-attribution{
+    background:rgba(4,10,16,.70)!important;
+    color:#8394a8!important;
+    backdrop-filter:blur(8px);
+  }
+
+  .heatshield-marker > div{
+    border:2px solid rgba(240,245,252,.90);
+    box-shadow:0 7px 20px rgba(0,0,0,.48),0 0 0 4px rgba(7,17,29,.48);
+  }
+
+  @media (max-width:1080px){
+    .sidebar{
+      background:linear-gradient(180deg,#0A1724,#07121d);
+    }
+    .nav-section-label{display:none;}
+    .nav .nav-link{
+      min-height:44px;
+      padding:9px;
+      border-radius:10px;
+    }
+    .nav .nav-link::after{display:none;}
+  }
+
+  @media (max-width:760px){
+    .sidebar{
+      padding:10px 12px 9px;
+      box-shadow:0 8px 28px rgba(0,0,0,.18);
+    }
+    .nav .nav-link{
+      min-height:36px;
+      padding:8px 10px;
+      border:1px solid rgba(93,117,145,.14);
+      background:rgba(255,255,255,.018);
+    }
+    .nav .nav-link.active{
+      background:rgba(110,99,240,.18);
+      border-color:rgba(110,99,240,.34);
+    }
+    .map-controls{
+      max-width:calc(100% - 20px);
+      flex-wrap:wrap;
+    }
+    .basemap-status{
+      top:auto;
+      right:10px;
+      bottom:49px;
+    }
+  }
+
+  @media (max-width:480px){
+    .map-layer-label{display:none;}
+    .basemap-button{padding:6px 8px;}
+  }
 </style>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/></head>
 <body>
-&lt;!-- HeatShield Day 10.5 SPA workspace navigation --&gt;
 
-&lt;!-- HeatShield Day 10.4 approved production design --&gt;
+
+
 
 <div class="app">
 <!-- SIDEBAR -->
@@ -629,15 +1057,15 @@
 </svg>
 <div class="brand-text">
 <span class="name">HeatShield AI</span>
-<span class="powered">Powered by FortyGuard</span>
+<span class="powered">Decision intelligence · FortyGuard evidence</span>
 </div>
 </div>
-<nav class="nav">
+<div class="nav-section-label">Workspace</div><nav class="nav">
 <button class="nav-link active" data-view="overview"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><rect height="8" rx="1.5" width="8" x="3" y="3"></rect><rect height="8" rx="1.5" width="8" x="13" y="3"></rect><rect height="8" rx="1.5" width="8" x="3" y="13"></rect><rect height="8" rx="1.5" width="8" x="13" y="13"></rect></svg> Overview</button>
 <button class="nav-link" data-view="thermal"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M9 4 L3 6 V20 L9 18 M9 4 L15 6 M9 4 V18 M15 6 L21 4 V18 L15 20 M15 6 V20 M9 18 L15 20"></path></svg> Thermal Map</button>
 <button class="nav-link" data-view="hotspots"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M12 2C8 6 6 9.5 6 13a6 6 0 0 0 12 0c0-3.5-2-7-6-11Z"></path></svg> Hotspots</button>
-<button class="nav-link" data-view="evidence"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><circle cx="6" cy="6" r="2.4"></circle><circle cx="18" cy="18" r="2.4"></circle><circle cx="6" cy="18" r="2.4"></circle><path d="M6 8.4 V15.6 M8.4 6 H14 a4 4 0 0 1 4 4 v5.6"></path></svg> Explainability</button>
-<button class="nav-link" data-view="actions"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M5 4h14v13l-4-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Recommendations</button>
+<button class="nav-link" data-view="evidence"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><circle cx="6" cy="6" r="2.4"></circle><circle cx="18" cy="18" r="2.4"></circle><circle cx="6" cy="18" r="2.4"></circle><path d="M6 8.4 V15.6 M8.4 6 H14 a4 4 0 0 1 4 4 v5.6"></path></svg> Evidence</button>
+<button class="nav-link" data-view="actions"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M5 4h14v13l-4-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Next Checks</button>
 <button class="nav-link" data-view="copilot"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M5 5.5h14v10H10l-4 3v-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Assistant</button>
 </nav>
 <div class="sidebar-spacer"></div>
@@ -665,7 +1093,7 @@
 <span class="chip verified">Verified evidence</span>
 <button class="btn-ghost">Historical replay</button>
 <button class="btn-ghost" id="compareHotspotsButton">Compare hotspots</button>
-<button class="btn-primary" id="openCopilotTop">Open Assistant</button>
+<button class="btn-primary" id="openCopilotTop"><svg aria-hidden="true" fill="none" height="15" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24" width="15"><path d="M5 5.5h14v10H10l-4 3v-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Open Assistant</button>
 </div>
 </div>
 <div class="content" data-view="overview">
@@ -675,7 +1103,7 @@
 <div class="ph-eyebrow" id="viewEyebrow">Urban Heat Decision Intelligence</div>
 <div class="ph-title" id="viewTitle">Heat Priority Dashboard</div>
 <div class="ph-subtitle" id="viewSubtitle">Hyperlocal thermal evidence and explainable planning intelligence</div>
-<div class="ph-safety" id="viewSafety">Planning priority ≠ medical-risk probability</div>
+<div class="ph-safety" id="viewSafety">Planning priority supports decisions; it is not a medical-risk probability</div>
 </div>
 <div class="ph-right">
 <div class="scope-badge" id="viewScopeBadge"><b>Scenario Replay</b> · Not Live Current Heat</div>
@@ -719,10 +1147,28 @@
 <!-- MAP -->
 <div class="map-panel"><div class="map-canvas" id="thermalMap"></div>
 <div class="map-controls">
-<div class="map-chip">Layer: <b>Historical Air Temperature</b></div>
-<div class="map-chip"><b>FortyGuard GeoJSON</b></div>
+<div class="map-chip map-layer-label">
+<span class="map-chip-dot"></span>
+<span>Historical Air Temperature</span>
 </div>
-<div class="map-note">Thermal source: FortyGuard · Smoothed view is derived from verified tiles</div>
+<div aria-label="Map basemap" class="basemap-switch" role="group">
+<button class="basemap-button active" id="satelliteBasemapButton" type="button">
+<svg aria-hidden="true" fill="none" height="14" stroke="currentColor" stroke-width="1.7" viewbox="0 0 24 24" width="14">
+<path d="M12 3l8 4.5-8 4.5-8-4.5L12 3Z"></path>
+<path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"></path>
+</svg>
+            Satellite
+          </button>
+<button class="basemap-button" id="streetBasemapButton" type="button">
+<svg aria-hidden="true" fill="none" height="14" stroke="currentColor" stroke-width="1.7" viewbox="0 0 24 24" width="14">
+<path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2-6-2Z"></path>
+<path d="M9 4v14M15 6v14"></path>
+</svg>
+            Streets
+          </button>
+</div>
+</div>
+<div class="map-note">FortyGuard thermal evidence · Satellite context: Esri World Imagery</div>
 <div class="map-legend">
 <div class="title">Historical Air Temperature</div>
 <div class="legend-bar"></div>
@@ -732,7 +1178,7 @@
 <strong>Interactive basemap unavailable.</strong>
 <span>Verified HeatShield evidence remains available in the decision panels.</span>
 </div>
-</div>
+<div class="basemap-status" id="basemapStatus">Satellite basemap</div></div>
 <!-- SELECTED HOTSPOT -->
 <div class="hotspot-panel" id="hotspotsSection">
 <div class="hp-eyebrow">Selected Hotspot</div>
@@ -794,9 +1240,9 @@
 <div class="evidence-card" id="evidenceRows"></div>
 <div class="completeness-card">
 <div class="completeness-title">What Still Needs Verification</div>
-<div class="status-row"><span class="status-name">Operational Vulnerability</span><span class="status-chip unknown" id="vulnStatus">Loading…</span></div>
-<div class="status-row"><span class="status-name">Adaptive Capacity</span><span class="status-chip unknown" id="capacityStatus">Loading…</span></div>
-<div class="status-row"><span class="status-name">Medical Risk Probability</span><span class="status-chip withheld" id="medicalStatus">Loading…</span></div>
+<div class="status-row"><span class="status-name">Operational Vulnerability</span><span class="status-chip unknown" id="vulnStatus">Loading...</span></div>
+<div class="status-row"><span class="status-name">Adaptive Capacity</span><span class="status-chip unknown" id="capacityStatus">Loading...</span></div>
+<div class="status-row"><span class="status-name">Medical Risk Probability</span><span class="status-chip withheld" id="medicalStatus">Loading...</span></div>
 </div>
 </div><div class="safety-strip">
         HeatShield does not convert planning priority into a medical-risk probability. Current mapped objects are not interpreted as people or occupancy.
@@ -840,6 +1286,5 @@
 </footer></div>
 </div>
 </div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=10.6.0"></script></body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=10.7.0"></script></body>
 </html>
