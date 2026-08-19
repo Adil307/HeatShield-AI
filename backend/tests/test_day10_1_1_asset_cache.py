@@ -2,11 +2,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-INDEX = ROOT / "frontend" / "dashboard" / "index.html"
+ROOT=Path(__file__).resolve().parents[2]
+HTML=(ROOT/"frontend/dashboard/index.html").read_text(encoding="utf-8")
 
-def test_dashboard_app_asset_is_versioned() -> None:
-    html = INDEX.read_text(encoding="utf-8")
-    match = re.search(r'src="\./app\.js\?v=([^"]+)"', html)
+def test_dashboard_app_asset_is_versioned():
+    match=re.search(r'src="\./app\.js\?v=([^"]+)"',HTML)
     assert match is not None
-    assert match.group(1) == "10.7.0"
+    assert match.group(1)=="10.8.0"

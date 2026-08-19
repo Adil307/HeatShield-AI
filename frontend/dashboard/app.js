@@ -73,7 +73,7 @@ function syncBasemapButtons(){
   const satellite=$("satelliteBasemapButton"),streets=$("streetBasemapButton"),status=$("basemapStatus");
   satellite?.classList.toggle("active",state.activeBasemap==="satellite");
   streets?.classList.toggle("active",state.activeBasemap==="streets");
-  if(status) status.textContent=state.activeBasemap==="satellite"?"Satellite basemap":"Street basemap";
+  if(status) status.textContent=state.activeBasemap==="satellite"?"Satellite view":"Simple map view";
 }
 
 function setBasemap(mode){
@@ -112,7 +112,7 @@ function ensureBasemaps(){
     if(satelliteErrors>=4&&state.activeBasemap==="satellite"){
       setBasemap("streets");
       const status=$("basemapStatus");
-      if(status)status.textContent="Satellite unavailable · Streets fallback";
+      if(status)status.textContent="Satellite unavailable · Simple map active";
     }
   });
 
@@ -135,14 +135,69 @@ function renderMap(){
 function renderKpis(){const s=state.snapshot.summary;const heat=state.snapshot.hotspots.map(h=>h.metrics.historical_heat_index_celsius).filter(Number.isFinite);const humid=state.snapshot.hotspots.map(h=>h.metrics.historical_relative_humidity_percent).filter(Number.isFinite);$("kpiTemp").textContent=metric(s.max_historical_air_temperature_celsius,"°C",2);$("kpiHeatIndex").textContent=heat.length?`${Math.max(...heat).toFixed(1)}°C`:"—";$("kpiHotspots").textContent=s.hotspot_count??"—";$("kpiPriority").textContent=fmt(s.highest_priority_score,2);$("kpiPriorityRank").textContent=s.highest_priority_rank?`Hotspot ${s.highest_priority_rank}`:"Verified planning order";$("kpiHumidity").textContent=humid.length?`${(humid.reduce((a,b)=>a+b,0)/humid.length).toFixed(1)}%`:"—";$("kpiTiles").textContent=s.heatmap_feature_count??"—";}
 function contributionsOf(h){return Object.fromEntries((h.contributions||[]).filter(x=>x?.component).map(x=>[x.component,x]));}
 
-function renderSelected(){const h=selectedHotspot();if(!h)return;const m=h.metrics,status=h.evidence_status,pos=state.snapshot.planning_order.indexOf(h.hotspot_rank)+1;$("selectedHotspotTitle").textContent=`Hotspot ${h.hotspot_rank}`;$("priorityBand").textContent=(h.planning_priority_band||"planning priority").toUpperCase();$("selectedScore").textContent=fmt(h.planning_priority,0);$("selectedTile").textContent=`Tile ${h.tile_id??"—"}`;$("selectedRank").textContent=`Priority Rank #${pos}`;const gauge=$("selectedScore").closest(".gauge"),circle=gauge?.querySelector("circle:nth-of-type(2)");if(circle){const circumference=251.3;circle.setAttribute("stroke-dasharray",circumference);circle.setAttribute("stroke-dashoffset",circumference*(1-Math.max(0,Math.min(100,h.planning_priority||0))/100));}
-  $("selectedMetrics").innerHTML=[["Historical Air Temp",metric(m.historical_air_temperature_celsius,"°C",2),"evidence"],["Historical Heat Index",metric(m.historical_heat_index_celsius,"°C",1),"evidence"],["Relative Humidity",metric(m.historical_relative_humidity_percent,"%",1),"evidence"],["Mapped Exposure Proxy",metric(m.mapped_exposure_proxy,"",2),"evidence"],["Hazard Ordinal",metric(m.hazard_planning_ordinal,"",0),"evidence"],["Evidence-adjusted Priority",status.evidence_adjusted_planning_priority==="withheld"?"WITHHELD":metric(m.evidence_adjusted_planning_priority,"",2),status.evidence_adjusted_planning_priority==="withheld"?"withheld":"evidence"]].map(([label,value,kind])=>`<div class="metric-row ${kind==="withheld"?"withheld":""}"><span class="label"><span class="dot ${kind==="withheld"?"withheld":"evidence"}"></span>${esc(label)}</span><span class="value">${esc(value)}</span></div>`).join("");
+
+function humanizeToken(value){
+  const text=String(value??"").trim().replaceAll("_"," ").replaceAll("-"," ");
+  if(!text)return "";
+  return text.toLowerCase().replace(/\b\w/g,ch=>ch.toUpperCase());
+}
+
+function humanStatus(value,fallback){
+  const raw=String(value??fallback??"").trim().toLowerCase();
+  if(raw==="unknown")return "Unknown";
+  if(raw==="withheld")return "Withheld";
+  if(raw==="verified")return "Verified";
+  if(raw==="available")return "Available";
+  if(raw==="not_applicable")return "Not applicable";
+  return humanizeToken(raw);
+}
+
+function recommendationKind(recommendation){
+  const action=String(recommendation?.action_type??"").toLowerCase();
+  const title=String(recommendation?.title??"").toLowerCase();
+
+  if(action.includes("verification")||action.includes("verify")||title.startsWith("verify")){
+    return {label:"Verify first",className:"verify"};
+  }
+  if(action.includes("assessment")||action.includes("assess")||title.startsWith("assess")){
+    return {label:"Assess next",className:"assess"};
+  }
+  if(action.includes("review")||title.includes("review")){
+    return {label:"Review if applicable",className:"review"};
+  }
+  return {label:"Recommended check",className:""};
+}
+
+function renderSelected(){const h=selectedHotspot();if(!h)return;const m=h.metrics,status=h.evidence_status,pos=state.snapshot.planning_order.indexOf(h.hotspot_rank)+1;$("selectedHotspotTitle").textContent=`Hotspot ${h.hotspot_rank}`;$("priorityBand").textContent=humanizeToken(h.planning_priority_band||"planning priority");$("priorityBand").classList.add("human-status");$("selectedScore").textContent=fmt(h.planning_priority,0);$("selectedTile").textContent=`Tile ${h.tile_id??"—"}`;$("selectedRank").textContent=`Priority Rank #${pos}`;const gauge=$("selectedScore").closest(".gauge"),circle=gauge?.querySelector("circle:nth-of-type(2)");if(circle){const circumference=251.3;circle.setAttribute("stroke-dasharray",circumference);circle.setAttribute("stroke-dashoffset",circumference*(1-Math.max(0,Math.min(100,h.planning_priority||0))/100));}
+  $("selectedMetrics").innerHTML=[["Historical Air Temp",metric(m.historical_air_temperature_celsius,"°C",2),"evidence"],["Historical Heat Index",metric(m.historical_heat_index_celsius,"°C",1),"evidence"],["Relative Humidity",metric(m.historical_relative_humidity_percent,"%",1),"evidence"],["Mapped Exposure Proxy",metric(m.mapped_exposure_proxy,"",2),"evidence"],["Hazard Ordinal",metric(m.hazard_planning_ordinal,"",0),"evidence"],["Evidence-adjusted Priority",status.evidence_adjusted_planning_priority==="withheld"?"Withheld":metric(m.evidence_adjusted_planning_priority,"",2),status.evidence_adjusted_planning_priority==="withheld"?"withheld":"evidence"]].map(([label,value,kind])=>`<div class="metric-row ${kind==="withheld"?"withheld":""}"><span class="label"><span class="dot ${kind==="withheld"?"withheld":"evidence"}"></span>${esc(label)}</span><span class="value">${esc(value)}</span></div>`).join("");
   const c=contributionsOf(h),hazard=c.hazard?.weighted_points,exposure=c.mapped_exposure?.weighted_points,context=c.context_sensitivity_proxy?.weighted_points;$("whyText").textContent=`This hotspot scores ${fmt(h.planning_priority,2)}/100. The score includes ${fmt(hazard,2)} points from thermal hazard, ${fmt(exposure,2)} from mapped exposure, and ${fmt(context,2)} from context sensitivity.`;$("donutScore").textContent=fmt(h.planning_priority,2);const total=(hazard||0)+(exposure||0)+(context||0)||1,p1=((hazard||0)/total)*100,p2=p1+((exposure||0)/total)*100;$("priorityDonut").style.background=`conic-gradient(var(--accent) 0 ${p1}%, var(--thermal-mid) ${p1}% ${p2}%, var(--humidity) ${p2}% 100%)`;$("compositionLegend").innerHTML=[["var(--accent)","Hazard",hazard],["var(--thermal-mid)","Mapped Exposure",exposure],["var(--humidity)","Context Sensitivity",context]].map(([color,label,value])=>`<div class="dl-row"><span class="dl-left"><span class="dl-swatch" style="background:${color}"></span>${label}</span><span class="dl-right">${fmt(value,2)} pts</span></div>`).join("");
-  $("evidenceRows").innerHTML=[["Historical Air Temperature",metric(m.historical_air_temperature_celsius,"°C",2)],["Historical Heat Index",metric(m.historical_heat_index_celsius,"°C",1)],["Apparent Temperature",metric(m.historical_apparent_temperature_celsius,"°C",1)],["Wet-Bulb Temperature",metric(m.historical_wet_bulb_temperature_celsius,"°C",1)],["Relative Humidity",metric(m.historical_relative_humidity_percent,"%",1)],["Mapped Exposure Proxy",metric(m.mapped_exposure_proxy,"",2)]].map(([label,value])=>`<div class="evidence-row"><span class="label">${esc(label)}</span><span class="value">${esc(value)}</span></div>`).join("");$("vulnStatus").textContent=String(status.verified_operational_vulnerability||"unknown").toUpperCase();$("capacityStatus").textContent=String(status.verified_adaptive_capacity||"unknown").toUpperCase();$("medicalStatus").textContent=String(status.medical_risk_probability||"withheld").toUpperCase();renderRecommendations(h);renderCopilotContext(h);}
+  $("evidenceRows").innerHTML=[["Historical Air Temperature",metric(m.historical_air_temperature_celsius,"°C",2)],["Historical Heat Index",metric(m.historical_heat_index_celsius,"°C",1)],["Apparent Temperature",metric(m.historical_apparent_temperature_celsius,"°C",1)],["Wet-Bulb Temperature",metric(m.historical_wet_bulb_temperature_celsius,"°C",1)],["Relative Humidity",metric(m.historical_relative_humidity_percent,"%",1)],["Mapped Exposure Proxy",metric(m.mapped_exposure_proxy,"",2)]].map(([label,value])=>`<div class="evidence-row"><span class="label">${esc(label)}</span><span class="value">${esc(value)}</span></div>`).join("");$("vulnStatus").textContent=humanStatus(status.verified_operational_vulnerability,"unknown");$("capacityStatus").textContent=humanStatus(status.verified_adaptive_capacity,"unknown");$("medicalStatus").textContent=humanStatus(status.medical_risk_probability,"withheld");renderRecommendations(h);renderCopilotContext(h);}
 
 function renderComparison(){const max=Math.max(...state.snapshot.hotspots.map(h=>Number(h.planning_priority)||0),1);$("comparisonBars").innerHTML=state.snapshot.hotspots.map((h,index)=>`<div class="bar-row"><div class="bar-head"><span class="name">Hotspot ${h.hotspot_rank}</span><span class="val">${fmt(h.planning_priority,2)}</span></div><div class="bar-track"><div class="bar-fill ${index===0?"leader":""}" style="width:${((h.planning_priority||0)/max)*100}%"></div></div></div>`).join("");$("topHotspots").innerHTML=state.snapshot.hotspots.map((h,index)=>`<div class="top-row" data-rank="${h.hotspot_rank}"><span class="rank-badge ${index===0?"first":""}">${index+1}</span><span class="top-name">Hotspot ${h.hotspot_rank}</span><span class="top-val">${fmt(h.planning_priority,2)}</span></div>`).join("");document.querySelectorAll(".top-row[data-rank]").forEach(row=>row.addEventListener("click",()=>selectHotspot(Number(row.dataset.rank))));}
-function renderRecommendations(h){const recs=(h.recommendations||[]).slice(0,5);$("compactRecommendations").innerHTML=recs.slice(0,4).map(r=>`<div class="rec-item"><span class="tag ${String(r.priority_tier||"").toLowerCase()}">${esc(r.priority_tier||"CONTROLLED")} — ${esc(r.action_type||"ASSESS")}</span><div class="title">${esc(r.title||"Controlled action")}</div>${r.recommendation?`<div class="desc">${esc(r.recommendation)}</div>`:""}</div>`).join("");$("allRecommendations").innerHTML=recs.map(r=>`<article style="background:var(--bg-card);border:1px solid var(--border-hairline);border-radius:10px;padding:14px;"><div style="font-size:9.5px;color:var(--accent);font-weight:700;">${esc(r.priority_tier||"CONTROLLED")} — ${esc(r.action_type||"ASSESS")}</div><div style="font-size:12px;font-weight:600;margin:8px 0 6px;">${esc(r.title||"Controlled action")}</div><div style="font-size:10.5px;color:var(--text-muted);line-height:1.5;">${esc(r.recommendation||"")}</div><div style="font-size:9px;color:var(--text-secondary);margin-top:10px;">${esc(r.status||"guarded")}</div></article>`).join("");}
-function renderCopilotContext(h){if(!h||!$("copilotContext"))return;const s=h.evidence_status;$("copilotContext").innerHTML=[["Selected hotspot",`Hotspot ${h.hotspot_rank}`],["Planning priority",`${fmt(h.planning_priority,2)}/100`],["Tile",String(h.tile_id??"—")],["Operational vulnerability",String(s.verified_operational_vulnerability||"UNKNOWN").toUpperCase()],["Adaptive capacity",String(s.verified_adaptive_capacity||"UNKNOWN").toUpperCase()],["Medical risk probability",String(s.medical_risk_probability||"WITHHELD").toUpperCase()]].map(([a,b])=>`<div class="context-line"><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join("");}
+function renderRecommendations(h){
+  const recs=(h.recommendations||[]).slice(0,5);
+
+  $("compactRecommendations").innerHTML=recs.slice(0,4).map(r=>{
+    const kind=recommendationKind(r);
+    return `<div class="rec-item">
+      <span class="recommendation-kind ${kind.className}">${esc(kind.label)}</span>
+      <div class="title">${esc(r.title||"Recommended check")}</div>
+      ${r.recommendation?`<div class="desc">${esc(r.recommendation)}</div>`:""}
+    </div>`;
+  }).join("");
+
+  $("allRecommendations").innerHTML=recs.map(r=>{
+    const kind=recommendationKind(r);
+    const statusText=humanStatus(r.status,"");
+    return `<article style="background:var(--bg-card);border:1px solid var(--border-hairline);border-radius:10px;padding:14px;">
+      <span class="recommendation-kind ${kind.className}">${esc(kind.label)}</span>
+      <div style="font-size:12px;font-weight:600;margin:8px 0 6px;">${esc(r.title||"Recommended check")}</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.5;">${esc(r.recommendation||"")}</div>
+      ${statusText?`<div style="font-size:9.5px;color:var(--text-secondary);margin-top:10px;">${esc(statusText)}</div>`:""}
+    </article>`;
+  }).join("");
+}
+function renderCopilotContext(h){if(!h||!$("copilotContext"))return;const s=h.evidence_status;$("copilotContext").innerHTML=[["Selected hotspot",`Hotspot ${h.hotspot_rank}`],["Planning priority",`${fmt(h.planning_priority,2)}/100`],["Tile",String(h.tile_id??"—")],["Operational vulnerability",humanStatus(s.verified_operational_vulnerability,"unknown")],["Adaptive capacity",humanStatus(s.verified_adaptive_capacity,"unknown")],["Medical risk probability",humanStatus(s.medical_risk_probability,"withheld")]].map(([a,b])=>`<div class="context-line"><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join("");}
 function selectHotspot(rank){state.selectedRank=rank;renderSelected();if(state.activeView==="thermal")renderMap();}
 function addMessage(role,text){const thread=$("thread"),msg=document.createElement("div");msg.className=`msg ${role}`;msg.textContent=text;thread.appendChild(msg);thread.scrollTop=thread.scrollHeight;}
 async function askCopilot(query){if(!query)return;activateView("copilot");addMessage("user",query);$("sendButton").disabled=true;$("sendButton").textContent="Checking evidence…";try{const response=await fetch("/api/v1/copilot/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query,mode:"auto",hotspot_rank:state.selectedRank})});const payload=await response.json();if(!response.ok)throw new Error(payload.detail||`HTTP ${response.status}`);addMessage("assistant",payload.answer||"No grounded answer was returned.");}catch(error){addMessage("assistant",`The assistant is unavailable right now: ${error.message}. The verified dashboard evidence is still available.`);}finally{$("sendButton").disabled=false;$("sendButton").textContent="Send";}}

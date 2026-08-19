@@ -1040,6 +1040,119 @@
     .map-layer-label{display:none;}
     .basemap-button{padding:6px 8px;}
   }
+
+  /* ---------- DAY 10.8 TWO MAP MODES + HUMAN LABELS ---------- */
+
+  /* Leaflet panes can sit above ordinary z-index values. Keep our controls
+     intentionally above the map so both view modes are always visible. */
+  .map-controls{
+    z-index:650 !important;
+    left:58px !important;
+    top:12px !important;
+    align-items:center;
+  }
+
+  .map-legend{
+    z-index:650 !important;
+  }
+
+  .map-note{
+    z-index:650 !important;
+  }
+
+  .basemap-status{
+    z-index:650 !important;
+  }
+
+  .basemap-switch{
+    border-radius:11px;
+    padding:4px;
+    background:rgba(5,14,24,.91);
+    border:1px solid rgba(126,148,176,.28);
+    box-shadow:0 10px 30px rgba(0,0,0,.28);
+  }
+
+  .basemap-button{
+    min-height:31px;
+    padding:6px 11px;
+    border-radius:8px;
+    font-size:10.5px;
+    letter-spacing:.005em;
+  }
+
+  .basemap-button.active{
+    background:linear-gradient(135deg,#655ced,#5878ed);
+    box-shadow:0 6px 18px rgba(76,73,184,.28);
+  }
+
+  .recommendation-kind{
+    display:inline-flex;
+    align-items:center;
+    min-height:23px;
+    width:fit-content;
+    padding:4px 8px;
+    border-radius:999px;
+    border:1px solid rgba(110,99,240,.24);
+    background:rgba(110,99,240,.07);
+    color:#a9a2ff;
+    font-size:9.5px;
+    font-weight:650;
+    letter-spacing:.01em;
+  }
+
+  .recommendation-kind.verify{
+    color:#55d7ad;
+    border-color:rgba(47,191,143,.25);
+    background:rgba(47,191,143,.06);
+  }
+
+  .recommendation-kind.assess{
+    color:#e6c45d;
+    border-color:rgba(217,164,65,.25);
+    background:rgba(217,164,65,.06);
+  }
+
+  .recommendation-kind.review{
+    color:#8ab7ef;
+    border-color:rgba(76,141,217,.24);
+    background:rgba(76,141,217,.06);
+  }
+
+  .human-status{
+    font-weight:600;
+    letter-spacing:0;
+    text-transform:none;
+  }
+
+  @media (max-width:760px){
+    .map-controls{
+      left:50px !important;
+      right:10px !important;
+      top:10px !important;
+      max-width:calc(100% - 60px);
+    }
+    .map-layer-label{
+      display:none;
+    }
+    .basemap-switch{
+      max-width:100%;
+    }
+    .basemap-button{
+      padding:6px 9px;
+    }
+  }
+
+  @media (max-width:480px){
+    .map-controls{
+      left:48px !important;
+      right:8px !important;
+    }
+    .basemap-button{
+      font-size:10px;
+      padding:6px 8px;
+    }
+  }
+
 </style>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/></head>
 <body>
@@ -1139,7 +1252,7 @@
 <div class="kpi-card" style="--cat:var(--evidence)">
 <div class="kpi-label">Verified Evidence Tiles</div>
 <div class="kpi-value" id="kpiTiles">—</div>
-<div class="kpi-sub evidence">Verified GeoJSON features</div>
+<div class="kpi-sub evidence">Verified thermal grid cells</div>
 </div>
 </div>
 <!-- PRIMARY SECTION -->
@@ -1151,7 +1264,7 @@
 <span class="map-chip-dot"></span>
 <span>Historical Air Temperature</span>
 </div>
-<div aria-label="Map basemap" class="basemap-switch" role="group">
+<div aria-label="Map view" class="basemap-switch" role="group">
 <button class="basemap-button active" id="satelliteBasemapButton" type="button">
 <svg aria-hidden="true" fill="none" height="14" stroke="currentColor" stroke-width="1.7" viewbox="0 0 24 24" width="14">
 <path d="M12 3l8 4.5-8 4.5-8-4.5L12 3Z"></path>
@@ -1164,11 +1277,11 @@
 <path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2-6-2Z"></path>
 <path d="M9 4v14M15 6v14"></path>
 </svg>
-            Streets
+            Simple Map
           </button>
 </div>
 </div>
-<div class="map-note">FortyGuard thermal evidence · Satellite context: Esri World Imagery</div>
+<div class="map-note">FortyGuard thermal evidence · Satellite view: Esri World Imagery</div>
 <div class="map-legend">
 <div class="title">Historical Air Temperature</div>
 <div class="legend-bar"></div>
@@ -1178,7 +1291,7 @@
 <strong>Interactive basemap unavailable.</strong>
 <span>Verified HeatShield evidence remains available in the decision panels.</span>
 </div>
-<div class="basemap-status" id="basemapStatus">Satellite basemap</div></div>
+<div class="basemap-status" id="basemapStatus">Satellite view</div></div>
 <!-- SELECTED HOTSPOT -->
 <div class="hotspot-panel" id="hotspotsSection">
 <div class="hp-eyebrow">Selected Hotspot</div>
@@ -1286,5 +1399,5 @@
 </footer></div>
 </div>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=10.7.0"></script></body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=10.8.0"></script></body>
 </html>
