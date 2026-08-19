@@ -23,12 +23,15 @@ Heckathon26/
 │   ├── scripts/
 │   ├── tests/
 │   └── config/
-├── frontend/            map UI (not started)
+├── frontend/            Next.js App Router UI
+│   ├── app/
+│   ├── public/
+│   ├── package.json
 │   └── .gitignore
 └── demo/
 ```
 
-This is a monorepo. Deploy the API from `/backend`. `/frontend` is the future UI deploy root and is not started yet.
+This is a monorepo. Deploy the API from `/backend`. Deploy the UI from `/frontend`. The UI is a clean Next.js 16 app and is not yet wired to the backend.
 
 The Python project lives in `backend/`. Create `.venv` there. Runtime artifacts go under `backend/data/` (ignored by `backend/.gitignore`). The FortyGuard key lives in `backend/.env` (also ignored). The root `.gitignore` only covers whole-repo files such as `abd/`, `.DS_Store`, `.vscode/`, and any `.env`.
 
@@ -50,6 +53,18 @@ pytest -q
 ```
 
 Do not run those commands from the repository root. `import app` only works from `backend/`.
+
+Frontend commands assume:
+
+```powershell
+cd frontend
+```
+
+Then:
+
+```powershell
+npm run dev
+```
 
 ## Day 1 objective
 
@@ -105,6 +120,21 @@ Useful endpoints:
 - `POST /api/v1/fortyguard/heatmap/submit`
 - `GET /api/v1/fortyguard/status/{activity_id}`
 - `POST /api/v1/fortyguard/heatmap/run`
+
+## Start frontend
+
+From `frontend/`:
+
+```powershell
+npm install
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
 
 ## First real FortyGuard test
 
