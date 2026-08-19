@@ -480,6 +480,138 @@
     .content[data-view="hotspots"] #hotspotsSection{display:block;}
     .content[data-view="hotspots"] #analyticsSection{grid-template-columns:1fr;}
   }
+
+
+  /* ---------- DAY 10.6 RESPONSIVE + HUMAN UI ---------- */
+  html,body{min-width:0;}
+  .app{min-width:0;width:100%;min-height:100vh;}
+  .main{min-width:0;}
+  .content{width:100%;max-width:1800px;margin:0 auto;}
+  .kpi-card,.a-card,.hotspot-panel,.map-panel,.evidence-card,.completeness-card{min-width:0;}
+  .nav-link{font-family:var(--sans);}
+  .btn-primary{box-shadow:none;}
+  .ph-title,.a-title,.kpi-label,.section-title,.completeness-title{text-wrap:balance;}
+  .section-subtitle,.ph-subtitle,.why-block .a,.rec-item .desc{text-wrap:pretty;}
+
+  /* Keep all live data readable instead of clipping long values. */
+  .metric-row .value,.evidence-row .value,.context-line strong{overflow-wrap:anywhere;}
+  .top-name,.rec-item .title{overflow-wrap:anywhere;}
+
+  /* Desktop / smaller laptops */
+  @media (max-width: 1320px){
+    .sidebar{width:196px;flex:0 0 196px;}
+    .content{padding:24px;}
+    .command-bar{padding:0 22px;}
+    .kpi-row{grid-template-columns:repeat(3,minmax(0,1fr));}
+    .primary-section{grid-template-columns:minmax(0,1fr) 320px;}
+    .analytics-row{grid-template-columns:repeat(2,minmax(0,1fr));}
+    #allRecommendations{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  }
+
+  /* Tablet: compact navigation rail, stacked main analysis */
+  @media (max-width: 1080px){
+    .sidebar{width:76px;flex:0 0 76px;padding:16px 10px;}
+    .brand{justify-content:center;padding:4px 0 18px;}
+    .brand-text,.thermal-source{display:none;}
+    .nav-link{justify-content:center;gap:0;padding:11px 8px;}
+    .nav-link svg{width:18px;height:18px;}
+    .nav-link{font-size:0;}
+    .nav-link svg{font-size:initial;}
+    .command-bar{height:auto;min-height:64px;padding:10px 18px;gap:14px;}
+    .cb-right{flex-wrap:wrap;justify-content:flex-end;gap:7px;}
+    .content{padding:22px 20px 36px;}
+    .primary-section{grid-template-columns:1fr;}
+    .map-panel{height:430px;}
+    .hotspot-panel{height:auto;min-height:390px;}
+    .explain-grid{grid-template-columns:1fr;}
+    #copilotMain{grid-template-columns:1fr;}
+    .content[data-view="hotspots"] #hotspotsSection{display:block;min-height:0;}
+    .content[data-view="hotspots"] #analyticsSection{grid-template-columns:1fr;}
+  }
+
+  /* Mobile / narrow tablet: navigation becomes a horizontal product bar */
+  @media (max-width: 760px){
+    html,body{font-size:12.5px;}
+    .app{display:block;}
+    .sidebar{
+      position:sticky;top:0;z-index:40;width:100%;height:auto;min-height:0;
+      padding:10px 12px;background:rgba(11,22,34,.98);
+      border-right:0;border-bottom:1px solid var(--border-hairline);
+    }
+    .brand{justify-content:flex-start;padding:0 2px 9px;}
+    .brand-text{display:flex;}
+    .brand-text .powered{display:none;}
+    .nav{
+      display:flex;flex-direction:row;overflow-x:auto;gap:6px;margin:0;
+      scrollbar-width:none;padding-bottom:1px;
+    }
+    .nav::-webkit-scrollbar{display:none;}
+    .nav-link{
+      flex:0 0 auto;width:auto;justify-content:flex-start;gap:7px;
+      padding:8px 10px;font-size:11.5px;border-left:0;border-bottom:2px solid transparent;
+      white-space:nowrap;
+    }
+    .nav-link svg{width:15px;height:15px;}
+    .nav-link.active{box-shadow:none;border-left-color:transparent;border-bottom-color:var(--accent);}
+    .sidebar-spacer,.thermal-source{display:none;}
+    .command-bar{
+      position:static;padding:10px 12px;display:flex;align-items:flex-start;
+      flex-direction:column;gap:9px;
+    }
+    .cb-left{width:100%;}
+    .cb-right{width:100%;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;scrollbar-width:none;}
+    .cb-right::-webkit-scrollbar{display:none;}
+    .chip,.btn-ghost,.btn-primary{flex:0 0 auto;font-size:10.5px;padding:6px 10px;}
+    .content{padding:18px 12px 28px;}
+    .page-header{margin-bottom:18px;}
+    .ph-title{font-size:23px;}
+    .ph-right{align-items:flex-start;width:100%;}
+    .scope-badge{white-space:normal;}
+    .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px;}
+    .kpi-card{padding:13px 12px;gap:6px;}
+    .kpi-label{font-size:9.5px;}
+    .kpi-value{font-size:21px;}
+    .primary-section{gap:12px;}
+    .map-panel{height:390px;border-radius:8px;}
+    .map-controls{top:10px;left:10px;right:10px;overflow-x:auto;}
+    .map-chip{font-size:9.5px;padding:6px 9px;white-space:nowrap;}
+    .map-legend{right:10px;bottom:10px;width:155px;padding:9px 10px;}
+    .map-note{left:10px;bottom:10px;max-width:46%;font-size:8.5px;}
+    .hotspot-panel{padding:16px;border-radius:8px;}
+    .analytics-row{grid-template-columns:1fr;gap:10px;}
+    .a-card{min-height:0;padding:15px;}
+    .evidence-card,.completeness-card{padding:15px;}
+    #allRecommendations{grid-template-columns:1fr!important;}
+    #copilotMain{min-height:0;gap:10px;}
+    .copilot-workspace,.copilot-context-card{border-radius:8px;}
+    .copilot-workspace-header{flex-direction:column;gap:10px;align-items:flex-start;}
+    .copilot-model-status{width:100%;justify-content:flex-start;flex-wrap:wrap;}
+    .copilot-quick{grid-template-columns:1fr 1fr;}
+    .copilot-thread{min-height:310px;}
+    .copilot-main-form{grid-template-columns:1fr;gap:8px;}
+    .copilot-main-form .btn-primary{width:100%;}
+    footer{flex-direction:column;gap:7px;}
+  }
+
+  /* Phones */
+  @media (max-width: 480px){
+    .content{padding:16px 10px 26px;}
+    .kpi-row{grid-template-columns:1fr;}
+    .ph-title{font-size:21px;}
+    .map-panel{height:340px;}
+    .map-legend{width:140px;}
+    .map-note{display:none;}
+    .gauge-row{align-items:flex-start;}
+    .gauge{width:82px;height:82px;}
+    .gauge svg{width:82px;height:82px;}
+    .metric-row{gap:10px;}
+    .metric-row .label{font-size:10.5px;}
+    .metric-row .value{font-size:10.5px;text-align:right;}
+    .copilot-quick{grid-template-columns:1fr;}
+    .qp-btn{border-radius:8px;}
+    .context-line{gap:12px;}
+    .section-title{font-size:15px;}
+  }
 </style>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/></head>
 <body>
@@ -506,7 +638,7 @@
 <button class="nav-link" data-view="hotspots"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M12 2C8 6 6 9.5 6 13a6 6 0 0 0 12 0c0-3.5-2-7-6-11Z"></path></svg> Hotspots</button>
 <button class="nav-link" data-view="evidence"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><circle cx="6" cy="6" r="2.4"></circle><circle cx="18" cy="18" r="2.4"></circle><circle cx="6" cy="18" r="2.4"></circle><path d="M6 8.4 V15.6 M8.4 6 H14 a4 4 0 0 1 4 4 v5.6"></path></svg> Explainability</button>
 <button class="nav-link" data-view="actions"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M5 4h14v13l-4-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Recommendations</button>
-<button class="nav-link" data-view="copilot"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M12 3l1.7 4.6L18 9.3l-4.3 1.7L12 15.6l-1.7-4.6L6 9.3l4.3-1.7Z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"></path></svg> AI Copilot</button>
+<button class="nav-link" data-view="copilot"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M5 5.5h14v10H10l-4 3v-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Assistant</button>
 </nav>
 <div class="sidebar-spacer"></div>
 <div class="thermal-source">
@@ -526,14 +658,14 @@
 <!-- COMMAND BAR -->
 <div class="command-bar">
 <div class="cb-left">
-<span class="eyebrow">Active Scenario</span>
-<span class="value">Verified Historical Thermal Replay</span>
+<span class="eyebrow">Scenario in view</span>
+<span class="value" id="scenarioLabel">Loading verified scenario…</span>
 </div>
 <div class="cb-right">
-<span class="chip verified">✓ Evidence Verified</span>
-<button class="btn-ghost">Scenario Replay</button>
-<button class="btn-ghost" id="compareHotspotsButton">Compare Hotspots</button>
-<button class="btn-primary" id="openCopilotTop">✦ AI Copilot</button>
+<span class="chip verified">Verified evidence</span>
+<button class="btn-ghost">Historical replay</button>
+<button class="btn-ghost" id="compareHotspotsButton">Compare hotspots</button>
+<button class="btn-primary" id="openCopilotTop">Open Assistant</button>
 </div>
 </div>
 <div class="content" data-view="overview">
@@ -562,7 +694,7 @@
 <div class="kpi-sub neutral">Historical scenario</div>
 </div>
 <div class="kpi-card" style="--cat:var(--accent)">
-<div class="kpi-label">Priority Hotspots</div>
+<div class="kpi-label">Hotspots Reviewed</div>
 <div class="kpi-value" id="kpiHotspots">—</div>
 <div class="kpi-sub neutral">Decision candidates</div>
 </div>
@@ -577,7 +709,7 @@
 <div class="kpi-sub humidity">Historical environment</div>
 </div>
 <div class="kpi-card" style="--cat:var(--evidence)">
-<div class="kpi-label">Evidence Tiles</div>
+<div class="kpi-label">Verified Evidence Tiles</div>
 <div class="kpi-value" id="kpiTiles">—</div>
 <div class="kpi-sub evidence">Verified GeoJSON features</div>
 </div>
@@ -590,7 +722,7 @@
 <div class="map-chip">Layer: <b>Historical Air Temperature</b></div>
 <div class="map-chip"><b>FortyGuard GeoJSON</b></div>
 </div>
-<div class="map-note">Thermal evidence: FortyGuard · Smooth surface: derived visualization</div>
+<div class="map-note">Thermal source: FortyGuard · Smoothed view is derived from verified tiles</div>
 <div class="map-legend">
 <div class="title">Historical Air Temperature</div>
 <div class="legend-bar"></div>
@@ -628,11 +760,11 @@
 </div>
 <div class="metrics-table" id="selectedMetrics"></div>
 <div class="why-block">
-<div class="q">Why is this area prioritized?</div>
+<div class="q">Why this hotspot ranks higher</div>
 <div class="a" id="whyText">Loading verified explanation…</div>
 </div>
 <div class="hp-spacer"></div>
-<button class="btn-outline-full" id="viewGroundedExplanation">View Grounded Explanation</button>
+<button class="btn-outline-full" id="viewGroundedExplanation">See Full Explanation</button>
 </div>
 </div>
 <!-- ANALYTICS ROW -->
@@ -652,66 +784,62 @@
 <div class="top-list" id="topHotspots"></div>
 </div>
 <div class="a-card">
-<div class="a-title">Controlled Recommendations</div>
+<div class="a-title">Recommended Next Checks</div>
 <div class="rec-list" id="compactRecommendations"></div>
 <button class="rec-link" id="viewAllRecommendations">View All Recommendations →</button>
 </div>
 </div>
 <!-- EXPLAINABILITY -->
-<section class="evidence-group" id="evidenceGroup"><div class="section-title" id="evidenceSection">Verified Evidence Behind the Priority</div><div class="section-subtitle">HeatShield preserves the distinction between observed, derived, inferred, unknown and withheld evidence.</div><div class="explain-grid">
+<section class="evidence-group" id="evidenceGroup"><div class="section-title" id="evidenceSection">What the Priority Is Based On</div><div class="section-subtitle">See the verified measurements, derived values, and the evidence that is still missing.</div><div class="explain-grid">
 <div class="evidence-card" id="evidenceRows"></div>
 <div class="completeness-card">
-<div class="completeness-title">Evidence Completeness</div>
-<div class="status-row"><span class="status-name">Operational Vulnerability</span><span class="status-chip unknown" id="vulnStatus">UNKNOWN</span></div>
-<div class="status-row"><span class="status-name">Adaptive Capacity</span><span class="status-chip unknown" id="capacityStatus">UNKNOWN</span></div>
-<div class="status-row"><span class="status-name">Medical Risk Probability</span><span class="status-chip withheld" id="medicalStatus">WITHHELD</span></div>
+<div class="completeness-title">What Still Needs Verification</div>
+<div class="status-row"><span class="status-name">Operational Vulnerability</span><span class="status-chip unknown" id="vulnStatus">Loading…</span></div>
+<div class="status-row"><span class="status-name">Adaptive Capacity</span><span class="status-chip unknown" id="capacityStatus">Loading…</span></div>
+<div class="status-row"><span class="status-name">Medical Risk Probability</span><span class="status-chip withheld" id="medicalStatus">Loading…</span></div>
 </div>
 </div><div class="safety-strip">
         HeatShield does not convert planning priority into a medical-risk probability. Current mapped objects are not interpreted as people or occupancy.
       </div></section>
-
-
 <section id="actionsSection" style="margin-bottom:20px;">
-<div class="section-title">Controlled Recommendations</div>
-<div class="section-subtitle">Every action is selected from the versioned HeatShield recommendation catalog.</div>
+<div class="section-title">Recommended Next Checks</div>
+<div class="section-subtitle">These checks come from HeatShield’s controlled action catalog and do not claim guaranteed outcomes.</div>
 <div id="allRecommendations" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;"></div>
 </section>
-<section aria-label="HeatShield Copilot workspace" id="copilotMain">
+<section aria-label="HeatShield Assistant workspace" id="copilotMain">
 <article class="copilot-workspace">
 <div class="copilot-workspace-header">
 <div>
-<h2>HeatShield Copilot</h2>
-<p>Ask about verified priorities, historical thermal metrics, hotspot comparisons, missing evidence, or controlled actions. Qwen routes intent locally; the deterministic evidence renderer remains the factual authority.</p>
+<h2>HeatShield Assistant</h2>
+<p>Ask about the selected hotspot, verified measurements, comparisons, missing evidence, or recommended next checks. Answers are written from HeatShield’s verified evidence.</p>
 </div>
-<div class="copilot-model-status"><span class="dot evidence"></span><span id="copilotStatus">Checking local Qwen…</span><span class="model-tag" id="copilotModel">qwen3:1.7b</span></div>
+<div class="copilot-model-status"><span class="dot evidence"></span><span id="copilotStatus">Checking local assistant…</span><span class="model-tag" id="copilotModel">Checking model…</span></div>
 </div>
 <div class="copilot-quick">
-<button class="qp-btn" data-prompt="Why is Hotspot 2 prioritized?">Why priority?</button>
-<button class="qp-btn" data-prompt="Compare hotspots">Compare hotspots</button>
-<button class="qp-btn" data-prompt="What actions should we consider?">Controlled actions</button>
-<button class="qp-btn" data-prompt="What evidence is missing?">Missing evidence</button>
+<button class="qp-btn" data-intent="why">Why does this hotspot rank higher?</button>
+<button class="qp-btn" data-intent="compare">Compare the hotspots</button>
+<button class="qp-btn" data-intent="actions">What should we verify next?</button>
+<button class="qp-btn" data-intent="missing">What evidence is still missing?</button>
 </div>
 <div class="copilot-thread" id="thread">
-<div class="msg assistant">Ask a grounded question. HeatShield will not invent missing evidence or medical-risk probabilities.</div>
+<div class="msg assistant">Choose a question above or ask in your own words. HeatShield will use the evidence currently selected.</div>
 </div>
 <form class="copilot-main-form" id="copilotForm">
-<input id="copilotInput" maxlength="2000" placeholder="Ask HeatShield about verified evidence..."/>
-<button class="btn-primary" id="sendButton" type="submit">Ask Copilot</button>
+<input id="copilotInput" maxlength="2000" placeholder="Ask about the selected evidence…"/>
+<button class="btn-primary" id="sendButton" type="submit">Send</button>
 </form>
 </article>
 <aside class="copilot-context-card">
-<h3>Active Grounding Context</h3>
+<h3>Evidence in This Question</h3>
 <div id="copilotContext"></div>
-<div class="context-safety">Planning priority is not a medical-risk probability. UNKNOWN and WITHHELD states remain explicit.</div>
+<div class="context-safety">HeatShield keeps unknown evidence explicit and does not turn planning priority into a medical-risk probability.</div>
 </aside>
 </section><footer style="display:flex;justify-content:space-between;border-top:1px solid var(--border-hairline);padding-top:16px;color:var(--text-muted);font-size:9.5px;">
-<span>FortyGuard thermal evidence · Deterministic HeatShield priority engine · Local grounded AI</span>
+<span>FortyGuard thermal evidence · HeatShield priority engine · Local evidence-grounded assistant</span>
 <span id="evidenceHash">Evidence lineage loading…</span>
 </footer></div>
 </div>
 </div>
-<!-- AI COPILOT DRAWER -->
 
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=10.5.0"></script></body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=10.6.0"></script></body>
 </html>
