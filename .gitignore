@@ -3,3 +3,9 @@ abd/
 .DS_Store
 .vscode/
 .env
+
+# Local hackathon patch/install artifacts
+HeatShield_Day*.zip
+INSTALL_DAY*.ps1
+MONOREPO_*.txt
+_day*_payload/
