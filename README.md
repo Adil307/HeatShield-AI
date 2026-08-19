@@ -133,28 +133,14 @@ If it fails, share only the HTTP status and provider error message — never the
 
 ## Tests
 
+Full clean-checkout recipe (FortyGuard heatmap → processed artifacts → pytest) and the short re-run command: [backend/docs/running-tests.md](backend/docs/running-tests.md).
+
+If `backend/data/processed/` already has the Day 4.4–8 artifacts:
+
 ```powershell
 cd backend
 .\.venv\Scripts\Activate.ps1
 pytest -q
-```
-
-## Later-day scripts
-
-From `backend/` with `.venv` active:
-
-```powershell
-python -m scripts.day2_hotspot_analysis
-python -m scripts.day2_schema_audit
-python -m scripts.day3_environmental_enrichment --start-date 2024-07-15 --start-time 14:00 --limit 3
-python -m scripts.day4_context_enrichment
-python -m scripts.day43_operational_baseline
-python -m scripts.day44_scenario_replay
-python -m scripts.day5_priority_analysis
-python -m scripts.day6_evidence_layer
-python -m scripts.day7_explainability_guard
-python -m scripts.day8_recommendation_engine
-python -m scripts.day9_copilot_demo
 ```
 
 ## Day 1 completion condition

@@ -12,30 +12,30 @@ from app.providers.fortyguard import FortyGuardClient, FortyGuardError
 from app.schemas.fortyguard import HeatmapRequest
 
 
-# Small central-Peshawar AOI.
-# GeoJSON coordinate order: [longitude, latitude].
-PESHAWAR_PAYLOAD = {
+# Official control AOI from scripts/official_heatmap_smoke_test.py.
+# Lower Manhattan, 2024-07-15 14:00. GeoJSON coordinate order: [longitude, latitude].
+OFFICIAL_PAYLOAD = {
     "polygon_aoi": {
         "type": "FeatureCollection",
         "features": [
             {
                 "type": "Feature",
-                "properties": {"name": "Peshawar Day-1 Test AOI"},
+                "properties": {"name": "NYC Day-1 Control AOI"},
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [[
-                        [71.5150, 34.0100],
-                        [71.5250, 34.0100],
-                        [71.5250, 34.0180],
-                        [71.5150, 34.0180],
-                        [71.5150, 34.0100]
+                        [-74.0170, 40.7050],
+                        [-74.0030, 40.7050],
+                        [-74.0030, 40.7180],
+                        [-74.0170, 40.7180],
+                        [-74.0170, 40.7050]
                     ]]
                 }
             }
         ]
     },
     "date_time": {
-        "start_date": "2026-08-18",
+        "start_date": "2024-07-15",
         "start_time": "14:00",
         "filter_type": 1
     },
@@ -52,7 +52,7 @@ async def main() -> None:
         print("Copy .env.example to .env and add your real key locally.")
         return
 
-    request = HeatmapRequest.model_validate(PESHAWAR_PAYLOAD)
+    request = HeatmapRequest.model_validate(OFFICIAL_PAYLOAD)
     client = FortyGuardClient(settings)
 
     try:
