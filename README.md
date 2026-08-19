@@ -60,7 +60,7 @@ Useful endpoints:
 In another terminal:
 
 ```powershell
-python scripts/first_heatmap_test.py
+python -m scripts.first_heatmap_test
 ```
 
 Expected flow:
