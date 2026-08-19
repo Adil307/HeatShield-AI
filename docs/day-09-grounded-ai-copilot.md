@@ -38,7 +38,7 @@ The LLM never writes the final factual answer.
 
 ## Provider policy
 
-`HEATSHIELD_COPILOT_PROVIDER=deterministic` is the default and makes zero paid LLM calls. An OpenAI Responses API planner adapter is included as an opt-in provider. Even in OpenAI mode, the model only chooses a structured plan; the deterministic evidence renderer creates the final answer.
+`COPILOT_PROVIDER=deterministic` is the default in `backend/.env` and makes zero paid LLM calls. An OpenAI Responses API planner adapter is included as an opt-in provider (`COPILOT_PROVIDER=openai` plus `OPENAI_API_KEY`). Even in OpenAI mode, the model only chooses a structured plan; the deterministic evidence renderer creates the final answer.
 
 The live provider smoke test is intentionally opt-in so installing or testing the project does not spend API credits unexpectedly.
 
@@ -58,6 +58,15 @@ For `h` hotspots, `e` evidence entries per hotspot, and `a` recommendations:
 - `GET /api/v1/copilot/status`
 - `GET /api/v1/copilot/capabilities`
 - `POST /api/v1/copilot/ask`
+
+Start the API from `backend/` with `.venv` active:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload
+python -m scripts.day9_copilot_demo
+```
 
 Example request:
 

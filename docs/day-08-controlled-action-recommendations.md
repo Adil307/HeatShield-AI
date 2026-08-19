@@ -43,3 +43,15 @@ Day 8 never claims:
 ## Complexity
 
 For `h` hotspots, `a` catalog actions, and small evidence ledger size `e`, trigger evaluation is `O(h*a*e)` in the simple implementation. The catalog is intentionally small, so runtime is effectively linear in hotspot count. No provider, Overpass, or LLM calls are made.
+
+## Run
+
+From `backend/` with `.venv` active:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m scripts.day8_recommendation_engine
+```
+
+The versioned catalog is `backend/config/day8_action_catalog.json`. Output: `backend/data/processed/day8_controlled_recommendations.json` (gitignored).

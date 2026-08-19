@@ -91,3 +91,15 @@ For `h` hotspots and fixed `c=5` mapped-context categories:
 - Heat index bands are not presented as probabilities.
 - No final risk score is issued without verified vulnerability/adaptive-capacity evidence.
 - Historical hazard + current context remains explicitly labeled a cross-time scenario replay.
+
+## Run
+
+From `backend/` with `.venv` active:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m scripts.day5_priority_analysis
+```
+
+Output: `backend/data/processed/day5_planning_priority.json` (gitignored).

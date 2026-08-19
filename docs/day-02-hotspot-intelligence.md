@@ -14,7 +14,7 @@ Day 02 does **not** compute human heat risk. It uses observed FortyGuard tile te
 5. Select hottest top-k tiles using a bounded heap.
 6. Compute AOI-relative z-score and min-max intensity.
 7. Create deterministic evidence IDs linked to the raw artifact SHA-256.
-8. Save a machine-readable derived artifact under `data/processed/`.
+8. Save a machine-readable derived artifact under `backend/data/processed/`.
 
 ## Complexity
 Let `n` be the number of FortyGuard tiles, `v` the total geometry vertices, and `k` the number of retained hotspot candidates.
@@ -34,23 +34,30 @@ The parser stores normalized tile records and geometry in memory, so normalized 
 - **Recommended:** none on Day 02.
 
 ## Run
+
+From `backend/` with `.venv` active:
+
 ```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
 python -m scripts.day2_hotspot_analysis
 ```
 
 Schema audit:
+
 ```powershell
 python -m scripts.day2_schema_audit
 ```
 
 Tests:
+
 ```powershell
 pytest -q
 ```
 
 ## Artifacts
-- Raw evidence: `data/raw/official_heatmap_completed.json`
-- Derived result: `data/processed/day2_hotspot_analysis.json`
+- Raw evidence: `backend/data/raw/official_heatmap_completed.json`
+- Derived result: `backend/data/processed/day2_hotspot_analysis.json`
 
 Raw and derived provider data are intentionally Git-ignored unless the team later confirms that repository publication is appropriate.
 

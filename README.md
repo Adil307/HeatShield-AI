@@ -2,11 +2,57 @@
 
 This is the first implementation milestone for the Global AI Hackathon'26 project.
 
+## Repository layout
+
+```text
+Heckathon26/
+├── README.md
+├── docs/
+├── backend/
+│   ├── .env.example
+│   ├── requirements.txt
+│   ├── app/
+│   │   ├── api/
+│   │   ├── schemas/
+│   │   ├── providers/
+│   │   ├── services/
+│   │   ├── ai/          copilot, tools, evidence guard
+│   │   └── db/          persistence placeholder
+│   ├── scripts/
+│   ├── tests/
+│   └── config/
+├── frontend/            map UI (not started)
+└── demo/
+```
+
+This is a monorepo. Deploy the API from `/backend`. `/frontend` is the future UI deploy root and is not started yet.
+
+The Python project lives in `backend/`. Create `.venv` there. Runtime artifacts go under `backend/data/` (gitignored). The FortyGuard key lives in `backend/.env`.
+
+## Working directory
+
+All Python commands in this README and in `docs/` assume:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+```
+
+Then:
+
+```powershell
+uvicorn app.main:app --reload
+python -m scripts.first_heatmap_test
+pytest -q
+```
+
+Do not run those commands from the repository root. `import app` only works from `backend/`.
+
 ## Day 1 objective
 
 Prove the real FortyGuard provider integration before building AI/risk logic.
 
-1. Read the API key securely from `.env`.
+1. Read the API key securely from `backend/.env`.
 2. Submit `POST /v1/heatmap`.
 3. Capture the returned `activity_id`.
 4. Poll `GET /v1/status/{activity_id}`.
@@ -16,9 +62,9 @@ Prove the real FortyGuard provider integration before building AI/risk logic.
 ## Setup — Windows PowerShell
 
 ```powershell
-cd heatshield-ai
+cd backend
 
-py -3.13 -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
 python -m pip install --upgrade pip
@@ -27,7 +73,7 @@ pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-Edit `.env` and place the real key locally:
+Edit `backend/.env` and place the real key locally:
 
 ```text
 FORTYGUARD_API_KEY=YOUR_REAL_KEY
@@ -36,6 +82,8 @@ FORTYGUARD_API_KEY=YOUR_REAL_KEY
 Never send the key in chat, commit it to GitHub, or expose it in frontend code.
 
 ## Start backend
+
+From `backend/`, with `.venv` active:
 
 ```powershell
 uvicorn app.main:app --reload
@@ -60,6 +108,8 @@ Useful endpoints:
 In another terminal:
 
 ```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
 python -m scripts.first_heatmap_test
 ```
 
@@ -73,10 +123,36 @@ Final status: Completed
 
 GeoJSON feature count: ...
 stats_data present: True
-Saved result: data/raw/first_heatmap_result.json
+Saved result: backend/data/raw/first_heatmap_result.json
 ```
 
 If it fails, share only the HTTP status and provider error message — never the API key.
+
+## Tests
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+pytest -q
+```
+
+## Later-day scripts
+
+From `backend/` with `.venv` active:
+
+```powershell
+python -m scripts.day2_hotspot_analysis
+python -m scripts.day2_schema_audit
+python -m scripts.day3_environmental_enrichment --start-date 2024-07-15 --start-time 14:00 --limit 3
+python -m scripts.day4_context_enrichment
+python -m scripts.day43_operational_baseline
+python -m scripts.day44_scenario_replay
+python -m scripts.day5_priority_analysis
+python -m scripts.day6_evidence_layer
+python -m scripts.day7_explainability_guard
+python -m scripts.day8_recommendation_engine
+python -m scripts.day9_copilot_demo
+```
 
 ## Day 1 completion condition
 

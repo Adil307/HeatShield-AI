@@ -47,3 +47,15 @@ bounded heatmap availability selection
 ## Scientific boundary
 
 The operational artifact is not a clinical or individual health-risk score. Current OSM objects indicate mapped-place presence, not occupancy, population, vulnerability, or health impact. A recent fallback heatmap is clearly labeled with its actual age.
+
+## Run
+
+From `backend/` with `.venv` active:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m scripts.day43_operational_baseline
+```
+
+Output is written under `backend/data/processed/` and `backend/data/raw/day43/` (gitignored).

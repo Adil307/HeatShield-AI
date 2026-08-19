@@ -16,6 +16,18 @@ Prove the provider boundary before building HeatShield intelligence.
   - `exceedance`
   - `persistence`
 
+## Run
+
+From `backend/` with `.venv` active:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m scripts.first_heatmap_test
+```
+
+The completed provider payload is saved to `backend/data/raw/first_heatmap_result.json` (gitignored). The API key stays in `backend/.env`.
+
 ## Evidence to save
 
 - activity_id

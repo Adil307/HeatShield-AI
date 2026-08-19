@@ -2,19 +2,24 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+*.egg-info/
+build/
+dist/
 .env
 .DS_Store
 .vscode/
 data/raw/
 data/cache/
 data/processed/
+data/input/
+backend/data/raw/
+backend/data/cache/
+backend/data/processed/
+backend/data/input/
 
 # Local development patch archives
 HeatShield_Day2_*.zip
-data/input/
-
 data/processed/day7_explainability_guard.json
-
 data/processed/day8_controlled_recommendations.json
 data/processed/day9_copilot_demo.json
 INSTALL_DAY*.ps1

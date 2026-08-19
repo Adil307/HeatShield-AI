@@ -34,8 +34,18 @@ For `k` selected hotspots and `p` returned context places:
 
 The number of OSM category queries is fixed at five; endpoint failover is sequential and bounded.
 
+## Run
+
+From `backend/` with `.venv` active:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m scripts.day44_scenario_replay
+```
+
 ## Output
 
-`data/processed/day44_scenario_replay.json` (Git ignored)
+`backend/data/processed/day44_scenario_replay.json` (Git ignored)
 
 The artifact labels evidence as historical observed, current observed, derived, inferred, or recommended so later risk logic cannot silently treat the replay as current reality.

@@ -136,3 +136,15 @@ Day 7 does not produce:
 - autonomous LLM reasoning.
 
 Recommendations belong to the controlled recommendation layer after Day 7.
+
+## Run
+
+From `backend/` with `.venv` active:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m scripts.day7_explainability_guard
+```
+
+Start the API from the same folder with `uvicorn app.main:app --reload`. Output: `backend/data/processed/day7_explainability_guard.json` (gitignored).

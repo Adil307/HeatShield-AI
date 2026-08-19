@@ -50,13 +50,23 @@ Where `k` is the small hotspot count, `p` is returned relevant OSM objects, `a` 
 - no inference from missing OSM objects
 - explicit OSM attribution and license metadata
 
+## Run
+
+From `backend/` with `.venv` active:
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m scripts.day4_context_enrichment
+```
+
 ## Output
 
-`data/processed/day4_exposure_context.json`
+`backend/data/processed/day4_exposure_context.json`
 
 Raw cache:
 
-`data/raw/day4/`
+`backend/data/raw/day4/`
 
 Both are runtime evidence and are intentionally Git ignored.
 

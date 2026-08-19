@@ -12,7 +12,7 @@ The current provider documentation exposes heat index, apparent temperature, wet
 
 ## Pipeline
 
-1. Read `data/processed/day2_hotspot_analysis.json`.
+1. Read `backend/data/processed/day2_hotspot_analysis.json`.
 2. Verify its source heatmap SHA-256 still matches the local Day-1 raw artifact.
 3. Select the highest-ranked hotspot candidates only.
 4. Derive a representative point from each small GeoJSON tile in O(v).
@@ -22,7 +22,7 @@ The current provider documentation exposes heat index, apparent temperature, wet
 8. Poll FortyGuard to completion for uncached requests.
 9. Strictly parse the returned location and core environmental metrics.
 10. Link environmental evidence back to the Day-2 thermal evidence ID.
-11. Save a derived Day-3 artifact to `data/processed/day3_environmental_enrichment.json`.
+11. Save a derived Day-3 artifact to `backend/data/processed/day3_environmental_enrichment.json`.
 
 ## Evidence classes
 
@@ -41,7 +41,11 @@ The implementation deliberately avoids enriching all heatmap tiles. Day 2 narrow
 
 The verified Day-1 control heatmap used New York City on `2024-07-15` at `14:00`. Day 3 must use the same date/time so environmental context aligns with the temperature evidence.
 
+From `backend/` with `.venv` active:
+
 ```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
 python -m scripts.day3_environmental_enrichment --start-date 2024-07-15 --start-time 14:00 --limit 3
 ```
 
