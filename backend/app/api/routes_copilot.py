@@ -20,11 +20,20 @@ CATALOG_PATH = backend_path("config/day8_action_catalog.json")
 @router.get("/status")
 async def copilot_status() -> dict:
     settings = get_settings()
+    provider = settings.copilot_provider.strip().lower()
+    configured_model = None
+    if provider == "openai":
+        configured_model = settings.copilot_model
+    elif provider == "ollama":
+        configured_model = settings.ollama_model
+
     return {
         "status": "ready" if DAY7_PATH.exists() and DAY8_PATH.exists() else "missing_artifacts",
-        "default_provider": settings.copilot_provider,
+        "default_provider": provider,
         "openai_key_configured": settings.openai_api_key_configured,
-        "model": settings.copilot_model if settings.copilot_provider.lower() == "openai" else None,
+        "model": configured_model,
+        "configured_model": configured_model,
+        "local_llm_supported": True,
         "final_answer_policy": "deterministic renderer over guard-approved evidence/action IDs",
     }
 
@@ -32,6 +41,7 @@ async def copilot_status() -> dict:
 @router.get("/capabilities")
 async def copilot_capabilities() -> dict:
     return {
+        "supported_planners": ["deterministic", "ollama", "openai"],
         "supported_intents": [
             "summary",
             "why_priority",

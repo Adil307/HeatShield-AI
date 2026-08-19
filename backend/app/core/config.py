@@ -21,12 +21,19 @@ class Settings(BaseSettings):
         "HeatShieldAI-Hackathon26/0.4.2 (+https://github.com/Adil307/Heckathon26)"
     )
 
-    # Day 9 grounded copilot. Deterministic mode is the safe zero-cost default.
+    # Grounded Copilot. Deterministic remains the fail-safe zero-cost default.
+    # Supported providers: deterministic, ollama, openai.
     copilot_provider: str = "deterministic"
     copilot_model: str = "gpt-5.6"
     copilot_timeout_seconds: float = 30.0
     copilot_max_output_tokens: int = 500
     openai_api_key: str = ""
+
+    # Local Qwen planner through Ollama. No API key is required for localhost.
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "qwen3:1.7b"
+    ollama_timeout_seconds: float = 180.0
+    ollama_keep_alive: str = "10m"
 
     app_env: str = "development"
 

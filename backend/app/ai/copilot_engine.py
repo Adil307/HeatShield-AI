@@ -4,12 +4,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from app.core.config import Settings
-from app.domain.copilot import CopilotPlan
-from app.providers.copilot_openai import CopilotProviderError, openai_plan
 from app.ai.copilot_context import CopilotContext, compact_llm_context, load_copilot_context
+from app.ai.copilot_local_router import materialize_local_route
 from app.ai.copilot_planner import deterministic_plan, validate_plan
 from app.ai.copilot_renderer import render_plan
+from app.core.config import Settings
+from app.domain.copilot import CopilotPlan
+from app.providers.copilot_ollama import OllamaCopilotProviderError, ollama_plan
+from app.providers.copilot_openai import CopilotProviderError, openai_plan
 
 
 class CopilotEngineError(ValueError):
@@ -31,8 +33,10 @@ async def answer_copilot(
 ) -> dict[str, Any]:
     if not isinstance(query, str) or not query.strip():
         raise CopilotEngineError("Copilot query must be non-empty.")
-    if mode not in {"auto", "deterministic", "openai"}:
-        raise CopilotEngineError("Copilot mode must be auto, deterministic, or openai.")
+    if mode not in {"auto", "deterministic", "ollama", "openai"}:
+        raise CopilotEngineError(
+            "Copilot mode must be auto, deterministic, ollama, or openai."
+        )
 
     context: CopilotContext = load_copilot_context(
         day7_path=day7_path,
@@ -42,20 +46,68 @@ async def answer_copilot(
         day44_path=day44_path,
         catalog_path=catalog_path,
     )
-    fallback_plan = deterministic_plan(query, context, preferred_hotspot_rank=preferred_hotspot_rank)
+    fallback_plan = deterministic_plan(
+        query,
+        context,
+        preferred_hotspot_rank=preferred_hotspot_rank,
+    )
     selected_plan: CopilotPlan = validate_plan(fallback_plan, context)
 
     provider = "deterministic_guarded_planner"
     llm_calls = 0
     llm_fallback = False
     provider_error: str | None = None
-    openai_enabled = settings.copilot_provider.lower() == "openai" and settings.openai_api_key_configured
-    should_try_openai = mode == "openai" or (mode == "auto" and openai_enabled)
+    local_route_corrections: tuple[str, ...] = ()
 
-    if should_try_openai:
+    configured_provider = settings.copilot_provider.strip().lower()
+    if configured_provider not in {"deterministic", "ollama", "openai"}:
+        raise CopilotEngineError(
+            "COPILOT_PROVIDER must be deterministic, ollama, or openai."
+        )
+
+    if mode == "deterministic":
+        provider_to_try: str | None = None
+    elif mode in {"ollama", "openai"}:
+        provider_to_try = mode
+    elif configured_provider in {"ollama", "openai"}:
+        provider_to_try = configured_provider
+    else:
+        provider_to_try = None
+
+    if provider_to_try == "ollama":
+        llm_calls = 1
+        try:
+            local_route = await ollama_plan(
+                query=query,
+                compact_context=compact_llm_context(context),
+                base_url=settings.ollama_base_url,
+                model=settings.ollama_model,
+                timeout_seconds=settings.ollama_timeout_seconds,
+                max_output_tokens=settings.copilot_max_output_tokens,
+                keep_alive=settings.ollama_keep_alive,
+            )
+            materialized_plan, local_route_corrections = materialize_local_route(
+                route=local_route,
+                deterministic_fallback=fallback_plan,
+                context=context,
+            )
+            selected_plan = validate_plan(materialized_plan, context)
+            provider = "ollama_qwen_intent_router+deterministic_materializer"
+        except (OllamaCopilotProviderError, ValueError) as exc:
+            if mode == "ollama":
+                raise CopilotEngineError(
+                    f"Local Ollama copilot planning failed: {exc}"
+                ) from exc
+            llm_fallback = True
+            provider_error = str(exc)
+            selected_plan = validate_plan(fallback_plan, context)
+
+    elif provider_to_try == "openai":
         if not settings.openai_api_key_configured:
             if mode == "openai":
-                raise CopilotEngineError("OpenAI mode requested but OPENAI_API_KEY is not configured.")
+                raise CopilotEngineError(
+                    "OpenAI mode requested but OPENAI_API_KEY is not configured."
+                )
         else:
             llm_calls = 1
             try:
@@ -71,7 +123,9 @@ async def answer_copilot(
                 provider = "openai_responses_structured_planner"
             except (CopilotProviderError, ValueError) as exc:
                 if mode == "openai":
-                    raise CopilotEngineError(f"OpenAI copilot planning failed: {exc}") from exc
+                    raise CopilotEngineError(
+                        f"OpenAI copilot planning failed: {exc}"
+                    ) from exc
                 llm_fallback = True
                 provider_error = str(exc)
                 selected_plan = validate_plan(fallback_plan, context)
@@ -105,6 +159,8 @@ async def answer_copilot(
             "llm_calls": llm_calls,
             "llm_fallback_used": llm_fallback,
             "provider_error": provider_error,
+            "local_inference": provider.startswith("ollama_qwen_"),
+            "local_route_corrections": list(local_route_corrections),
             "new_fortyguard_calls": 0,
             "new_overpass_calls": 0,
         },
