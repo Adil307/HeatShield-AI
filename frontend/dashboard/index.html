@@ -1191,6 +1191,24 @@
   .live-provenance{font-size:9px;color:var(--text-muted);line-height:1.5;word-break:break-word;}
   .live-ready-dot{width:7px;height:7px;border-radius:50%;background:var(--evidence);display:inline-block;margin-right:6px;box-shadow:0 0 0 3px rgba(47,191,143,.08);}
   .live-api-state{display:flex;align-items:center;font-size:9.5px;color:var(--text-secondary);}
+
+  .live-decision-bridge{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--border-hairline);padding-top:12px;margin-top:4px;}
+  .live-decision-title{font-size:12px;font-weight:650;color:var(--text-primary);margin:3px 0 4px;}
+  .live-decision-copy{font-size:9px;color:var(--text-muted);line-height:1.45;max-width:430px;}
+  .live-decision-result{display:none;gap:10px;border:1px solid rgba(110,99,240,.22);border-radius:9px;background:rgba(110,99,240,.035);padding:11px;}
+  .live-decision-result.visible{display:grid;}
+  .live-classification-row{display:flex;align-items:center;gap:7px;font-size:9.5px;color:var(--text-secondary);}
+  .live-classification-row .class{font-size:7.5px;letter-spacing:.08em;font-weight:700;border-radius:999px;padding:3px 6px;border:1px solid var(--border-hairline);}
+  .live-classification-row .observed{color:var(--evidence);border-color:rgba(47,191,143,.35);}
+  .live-classification-row .derived{color:#9a8cff;border-color:rgba(154,140,255,.35);}
+  .live-classification-row .recommended{color:#f0b84f;border-color:rgba(240,184,79,.35);}
+  .live-hazard-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .live-hazard-row>div,.live-withheld{border:1px solid var(--border-hairline);border-radius:8px;padding:9px;background:rgba(255,255,255,.016);}
+  .live-hazard-row span,.live-withheld span{display:block;font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+  .live-hazard-row strong,.live-withheld strong{display:block;font-size:11px;color:var(--text-primary);}
+  .live-withheld strong{color:#f0b84f;margin-bottom:4px;}.live-withheld small{display:block;font-size:8.5px;color:var(--text-muted);line-height:1.45;}
+  .live-next-checks{display:grid;gap:6px;}.live-check-row{display:flex;gap:8px;border:1px solid var(--border-hairline);border-radius:7px;padding:8px;}
+  .live-check-tag{font-size:7px;letter-spacing:.07em;color:#f0b84f;white-space:nowrap;margin-top:2px;}.live-check-row strong,.live-check-row small{display:block;}.live-check-row strong{font-size:9.5px;color:var(--text-primary);}.live-check-row small{font-size:8.5px;color:var(--text-muted);line-height:1.4;margin-top:2px;}
   @media (max-width:1020px){#liveAnalysisPanel{height:auto;min-height:420px;}}
   @media (max-width:760px){.live-grid-2,.live-result-grid{grid-template-columns:1fr;}}
 
@@ -1369,11 +1387,11 @@
 <button class="btn-outline-full" id="viewGroundedExplanation">See Full Explanation</button>
 </div>
 <div id="liveAnalysisPanel" aria-label="Fresh FortyGuard thermal analysis">
-  <div class="live-panel-eyebrow">Day 11 · Fresh Provider Evidence</div>
+  <div class="live-panel-eyebrow">Day 12 · Live Decision Readiness</div>
   <div class="live-panel-title">Run a New Thermal Analysis</div>
   <div class="live-panel-copy">Pan and zoom the map to the area you want to inspect. HeatShield will submit the current map viewport to FortyGuard as a new TCM thermal job.</div>
   <div class="live-api-state"><span class="live-ready-dot"></span><span id="liveApiStatus">Checking FortyGuard configuration…</span></div>
-  <div class="live-scope-note">Fresh mode deliberately stops at verified temperature evidence and relative hottest tiles. It does not invent planning priority, vulnerability, occupancy, recommendations, or medical risk.</div>
+  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Day 12 can explicitly enrich the hottest tile with FortyGuard thermal-stress parameters, while planning priority remains withheld until exposure, vulnerability, and protection context are verified.</div>
   <form class="live-form" id="liveAnalysisForm">
     <div class="live-grid-2">
       <div class="live-field"><label for="liveDate">Analysis date (UTC)</label><input id="liveDate" type="date" required></div>
@@ -1394,6 +1412,30 @@
     <div class="live-panel-eyebrow">Relative hottest tiles</div>
     <div class="live-hot-list" id="liveHottestTiles"></div>
     <div class="live-provenance" id="liveProvenance"></div>
+    <div class="live-decision-bridge">
+      <div>
+        <div class="live-panel-eyebrow">Day 12 · Decision readiness</div>
+        <div class="live-decision-title">Add thermal-stress evidence to the hottest tile</div>
+        <div class="live-decision-copy">This controlled step reuses the completed thermal job and may create one FortyGuard Environmental Parameters job. It does not create occupancy, vulnerability, or a medical-risk probability.</div>
+      </div>
+      <button class="btn-primary" id="liveEnrichButton" type="button" disabled>Enrich Hottest Tile</button>
+    </div>
+    <div class="live-run-status" id="liveDecisionStatus"></div>
+    <div class="live-decision-result" id="liveDecisionResult">
+      <div class="live-classification-row"><span class="class observed">OBSERVED</span><strong>FortyGuard thermal-stress evidence</strong></div>
+      <div class="live-result-grid">
+        <div class="live-result-stat"><span>Heat index</span><strong id="liveHeatIndex">—</strong></div>
+        <div class="live-result-stat"><span>Apparent temperature</span><strong id="liveApparent">—</strong></div>
+        <div class="live-result-stat"><span>Wet-bulb temperature</span><strong id="liveWetBulb">—</strong></div>
+        <div class="live-result-stat"><span>Relative humidity</span><strong id="liveHumidity">—</strong></div>
+      </div>
+      <div class="live-classification-row"><span class="class derived">DERIVED</span><strong>Transparent hazard planning signal</strong></div>
+      <div class="live-hazard-row"><div><span>Hazard ordinal</span><strong id="liveHazardOrdinal">—</strong></div><div><span>Heat-index band</span><strong id="liveHazardBand">—</strong></div></div>
+      <div class="live-withheld"><span>PLANNING PRIORITY</span><strong id="livePriorityReadiness">WITHHELD · context required</strong><small>Mapped exposure, operational vulnerability, and adaptive capacity are still missing. HeatShield will not fill them in from the map or an LLM.</small></div>
+      <div class="live-classification-row"><span class="class recommended">RECOMMENDED</span><strong>Evidence checks before full priority</strong></div>
+      <div class="live-next-checks" id="liveNextChecks"></div>
+      <div class="live-provenance" id="liveDecisionProvenance"></div>
+    </div>
   </div>
 </div>
 </div>
@@ -1470,5 +1512,5 @@
 </footer></div>
 </div>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=11.0.0"></script></body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=12.0.0"></script></body>
 </html>

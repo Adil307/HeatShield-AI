@@ -1,4 +1,4 @@
-const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
+const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
 const $ = (id) => document.getElementById(id);
 const fmt = (v,d=1) => typeof v === "number" && Number.isFinite(v) ? v.toFixed(d) : "—";
 const metric = (v,s="",d=1) => typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(d)}${s}` : "—";
@@ -44,7 +44,7 @@ const VIEW_COPY = {
     eyebrow:"Fresh FortyGuard Thermal Evidence",
     title:"Live Analysis",
     subtitle:"Submit the current map viewport as a fresh provider-backed TCM analysis",
-    safety:"Fresh mode shows temperature evidence only; no planning priority or medical-risk score is inferred",
+    safety:"Fresh mode adds thermal-stress evidence, but no planning priority or medical-risk score is inferred until required context is verified",
     scope:"Fresh provider request · Controlled scope"
   },
   copilot:{
@@ -288,6 +288,36 @@ function renderLiveResult(payload){
   if($("liveProvenance"))$("liveProvenance").textContent=`Activity ID: ${prov.activity_id||"—"} · Request ${String(prov.request_hash||"").slice(0,12)}… · Evidence ${String(prov.source_sha256||"").slice(0,12)}…`;
 }
 
+function renderLiveEnrichment(payload){
+  const observed=payload?.environmental_observed||{},derived=payload?.environmental_derived||{},readiness=payload?.decision_readiness||{},prov=payload?.provenance||{};
+  $("liveDecisionResult")?.classList.add("visible");
+  if($("liveHeatIndex"))$("liveHeatIndex").textContent=metric(observed.heat_index_celsius,"°C",1);
+  if($("liveApparent"))$("liveApparent").textContent=metric(observed.apparent_temperature_celsius,"°C",1);
+  if($("liveWetBulb"))$("liveWetBulb").textContent=metric(observed.wet_bulb_temperature_celsius,"°C",1);
+  if($("liveHumidity"))$("liveHumidity").textContent=metric(observed.relative_humidity_percent,"%",1);
+  if($("liveHazardOrdinal"))$("liveHazardOrdinal").textContent=derived.hazard_planning_ordinal==null?"WITHHELD":`${fmt(derived.hazard_planning_ordinal,0)}/100`;
+  if($("liveHazardBand"))$("liveHazardBand").textContent=derived.heat_index_band?humanizeToken(derived.heat_index_band):"Observed heat index unavailable";
+  if($("livePriorityReadiness"))$("livePriorityReadiness").textContent=readiness.planning_priority==="withheld_missing_required_context"?"WITHHELD · context required":humanizeToken(readiness.planning_priority||"withheld");
+  if($("liveNextChecks"))$("liveNextChecks").innerHTML=(payload.next_checks||[]).map(item=>`<div class="live-check-row"><span class="live-check-tag">NEXT CHECK</span><div><strong>${esc(item.label)}</strong><small>${esc(item.reason)}</small></div></div>`).join("");
+  if($("liveDecisionProvenance"))$("liveDecisionProvenance").textContent=`Thermal activity ${prov.thermal_activity_id||"—"} · Environmental activity ${prov.environmental_activity_id||"—"} · ${prov.environmental_cache_hit?"environment cache reused":"one environmental provider job"}`;
+}
+
+async function runLiveEnrichment(){
+  const status=$("liveDecisionStatus"),button=$("liveEnrichButton");
+  if(!state.liveRequest||!state.liveAnalysis){if(status){status.className="live-run-status error";status.textContent="Run the fresh thermal analysis first.";}return;}
+  if(button){button.disabled=true;button.textContent="Enriching hottest tile…";}
+  if(status){status.className="live-run-status";status.textContent="Reusing the verified thermal completion and requesting environmental parameters for the hottest tile…";}
+  try{
+    const response=await fetch("/api/v1/dashboard/live-analysis/top-hotspot-enrichment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(state.liveRequest)});
+    const payload=await response.json();
+    if(!response.ok)throw new Error(formatApiError(payload,response.status));
+    state.liveEnrichment=payload;
+    renderLiveEnrichment(payload);
+    if(status){status.className="live-run-status success";status.textContent=payload.provenance?.environmental_cache_hit?"Verified environmental completion reused; no new provider job was created.":"Hottest tile enriched with verified FortyGuard thermal-stress evidence.";}
+  }catch(error){if(status){status.className="live-run-status error";status.textContent=`Environmental enrichment failed: ${error.message}`;}}
+  finally{if(button){button.disabled=false;button.textContent="Enrich Hottest Tile";}}
+}
+
 async function runLiveAnalysis(){
   const status=$("liveRunStatus"),button=$("liveRunButton");
   const polygon=currentViewportFeatureCollection();
@@ -302,6 +332,10 @@ async function runLiveAnalysis(){
     const payload=await response.json();
     if(!response.ok)throw new Error(formatApiError(payload,response.status));
     state.liveAnalysis=payload;
+    state.liveRequest=request;
+    state.liveEnrichment=null;
+    $("liveDecisionResult")?.classList.remove("visible");
+    if($("liveEnrichButton"))$("liveEnrichButton").disabled=false;
     renderLiveResult(payload);
     renderMap();
     if(status){status.className="live-run-status success";status.textContent=payload.provenance?.cache_hit?"Verified cached completion reused; no new provider job was created.":"Fresh FortyGuard job completed and verified thermal tiles are on the map.";}
@@ -311,7 +345,11 @@ async function runLiveAnalysis(){
 
 function resetLiveAnalysis(){
   state.liveAnalysis=null;
+  state.liveRequest=null;
+  state.liveEnrichment=null;
   $("liveResult")?.classList.remove("visible");
+  $("liveDecisionResult")?.classList.remove("visible");
+  if($("liveEnrichButton"))$("liveEnrichButton").disabled=true;
   if($("liveRunStatus")){ $("liveRunStatus").className="live-run-status";$("liveRunStatus").textContent="Historical replay restored."; }
   activateView("thermal");
 }
@@ -347,6 +385,7 @@ $("copilotForm")?.addEventListener("submit",event=>{event.preventDefault();const
 $("satelliteBasemapButton")?.addEventListener("click",()=>setBasemap("satellite"));
 $("streetBasemapButton")?.addEventListener("click",()=>setBasemap("streets"));
 $("liveAnalysisForm")?.addEventListener("submit",event=>{event.preventDefault();runLiveAnalysis();});
+$("liveEnrichButton")?.addEventListener("click",runLiveEnrichment);
 $("liveResetButton")?.addEventListener("click",resetLiveAnalysis);
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(VIEW_COPY[view])activateView(view,{updateHash:false});});
 init();

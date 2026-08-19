@@ -1,0 +1,28 @@
+{
+  "error": false,
+  "status_code": 200,
+  "message": "Completed",
+  "data": {
+    "activity_id": "day12-env-fixture-activity",
+    "status": "Completed",
+    "result": {
+      "metadata": {
+        "timezone": "UTC",
+        "timestamps": ["2026-08-19T18:00:00+00:00"]
+      },
+      "locations": [
+        {
+          "lat": 40.7015,
+          "lon": -73.9985,
+          "temperature": 33.0,
+          "parameters": {
+            "heat_index_celsius": [38.2],
+            "apparent_temperature_celsius": [38.4],
+            "wet_bulb_temperature_celsius": [26.6],
+            "relative_humidity_percent": [55.3]
+          }
+        }
+      ]
+    }
+  }
+}
