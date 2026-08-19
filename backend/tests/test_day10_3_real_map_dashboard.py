@@ -18,9 +18,9 @@ def test_current_dashboard_uses_real_map_stack() -> None:
     assert "L.geoJSON" in js
     assert "L.heatLayer" in js
 
-def test_current_dashboard_uses_day10_4_versioned_app_asset() -> None:
+def test_current_dashboard_uses_day10_5_versioned_app_asset() -> None:
     html = read("index.html")
-    assert "app.js?v=10.4.0" in html
+    assert "app.js?v=10.5.0" in html
 
 def test_current_dashboard_has_professional_decision_layout() -> None:
     html = read("index.html")
@@ -32,7 +32,7 @@ def test_current_dashboard_has_professional_decision_layout() -> None:
         "Priority Composition",
         "Hotspot Comparison",
         "Controlled Recommendations",
-        "drawer",
+        "copilotMain",
         "copilotForm",
     ]:
         assert token in html
@@ -40,15 +40,14 @@ def test_current_dashboard_has_professional_decision_layout() -> None:
 
 def test_current_dashboard_rejects_reference_only_dummy_claims() -> None:
     text = (read("index.html") + "\n" + read("app.js")).lower()
-    forbidden = [
+    for phrase in [
         "population at risk",
         "air quality (aqi)",
         "risk trend (last 7 days)",
         "city center",
         "university town",
         "airport road",
-    ]
-    for phrase in forbidden:
+    ]:
         assert phrase not in text
 
 def test_current_dashboard_keeps_evidence_scope_visible() -> None:
@@ -59,8 +58,8 @@ def test_current_dashboard_keeps_evidence_scope_visible() -> None:
     assert "current mapped objects are not interpreted as people or occupancy" in text
 
 def test_current_dashboard_keeps_grounded_ai_contract() -> None:
-    html = read("index.html")
+    html = read("index.html").lower()
     js = read("app.js")
-    assert "Qwen routes intent locally" in html
-    assert "Deterministic HeatShield evidence writes the factual answer" in html
+    assert "qwen routes intent locally" in html
+    assert "deterministic evidence renderer remains the factual authority" in html
     assert 'fetch("/api/v1/copilot/ask"' in js

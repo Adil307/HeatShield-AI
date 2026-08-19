@@ -383,9 +383,108 @@
   .drawer-input-row{align-items:center;}
   .drawer-input-row .btn-primary{white-space:nowrap;}
   .rec-link{cursor:pointer;background:none;border:0;text-align:left;}
+
+  /* Day 10.5 — single-workspace navigation */
+  .content{position:relative;}
+  .view-only{display:none!important;}
+  .content[data-view="overview"] .kpi-row{display:grid;}
+  .content[data-view="overview"] #analyticsSection{display:grid;}
+  .content[data-view="overview"] #thermalSection,
+  .content[data-view="overview"] #evidenceGroup,
+  .content[data-view="overview"] #actionsSection,
+  .content[data-view="overview"] #copilotMain{display:none;}
+
+  .content[data-view="thermal"] .kpi-row,
+  .content[data-view="thermal"] #analyticsSection,
+  .content[data-view="thermal"] #evidenceGroup,
+  .content[data-view="thermal"] #actionsSection,
+  .content[data-view="thermal"] #copilotMain{display:none;}
+  .content[data-view="thermal"] #thermalSection{display:grid;}
+
+  .content[data-view="hotspots"] .kpi-row,
+  .content[data-view="hotspots"] #evidenceGroup,
+  .content[data-view="hotspots"] #actionsSection,
+  .content[data-view="hotspots"] #copilotMain{display:none;}
+  .content[data-view="hotspots"] #thermalSection{display:grid;grid-template-columns:1fr;}
+  .content[data-view="hotspots"] #thermalSection .map-panel{display:none;}
+  .content[data-view="hotspots"] #hotspotsSection{height:auto;min-height:330px;display:grid;grid-template-columns:minmax(220px,.7fr) minmax(360px,1.3fr);grid-template-areas:
+    "eyebrow badge" "title badge" "gauge metrics" "why metrics" "button metrics";column-gap:28px;align-content:start;}
+  .content[data-view="hotspots"] #hotspotsSection .hp-eyebrow{grid-area:eyebrow;}
+  .content[data-view="hotspots"] #hotspotsSection .hp-title{grid-area:title;}
+  .content[data-view="hotspots"] #hotspotsSection .status-pill{grid-area:badge;justify-self:end;align-self:start;}
+  .content[data-view="hotspots"] #hotspotsSection .gauge-row{grid-area:gauge;margin-top:12px;}
+  .content[data-view="hotspots"] #hotspotsSection .metrics-table{grid-area:metrics;margin:0;padding-top:0;border-top:0;align-self:start;}
+  .content[data-view="hotspots"] #hotspotsSection .why-block{grid-area:why;}
+  .content[data-view="hotspots"] #hotspotsSection .hp-spacer{display:none;}
+  .content[data-view="hotspots"] #hotspotsSection .btn-outline-full{grid-area:button;align-self:start;}
+  .content[data-view="hotspots"] #analyticsSection{display:grid;grid-template-columns:1.2fr 1fr 1fr;}
+  .content[data-view="hotspots"] #analyticsSection .a-card:first-child{display:none;}
+  .content[data-view="hotspots"] #analyticsSection .a-card:last-child{display:none;}
+
+  .content[data-view="evidence"] .kpi-row,
+  .content[data-view="evidence"] #thermalSection,
+  .content[data-view="evidence"] #actionsSection,
+  .content[data-view="evidence"] #copilotMain{display:none;}
+  .content[data-view="evidence"] #analyticsSection{display:grid;grid-template-columns:minmax(260px,380px);margin-bottom:18px;}
+  .content[data-view="evidence"] #analyticsSection .a-card:not(:first-child){display:none;}
+  .content[data-view="evidence"] #evidenceGroup{display:block;}
+
+  .content[data-view="actions"] .kpi-row,
+  .content[data-view="actions"] #thermalSection,
+  .content[data-view="actions"] #analyticsSection,
+  .content[data-view="actions"] #evidenceGroup,
+  .content[data-view="actions"] #copilotMain{display:none;}
+  .content[data-view="actions"] #actionsSection{display:block;}
+
+  .content[data-view="copilot"] .kpi-row,
+  .content[data-view="copilot"] #thermalSection,
+  .content[data-view="copilot"] #analyticsSection,
+  .content[data-view="copilot"] #evidenceGroup,
+  .content[data-view="copilot"] #actionsSection{display:none;}
+  .content[data-view="copilot"] #copilotMain{display:grid;}
+
+  .workspace-view-header{margin-bottom:22px;}
+  .workspace-view-header .ph-title{margin-bottom:4px;}
+  .workspace-view-header .ph-safety{margin-top:8px;}
+  #overviewSection{margin-bottom:24px;}
+
+  #copilotMain{display:none;grid-template-columns:minmax(0,1.5fr) minmax(260px,.5fr);gap:16px;min-height:560px;}
+  .copilot-workspace,.copilot-context-card{background:var(--bg-card);border:1px solid var(--border-hairline);border-radius:10px;}
+  .copilot-workspace{display:flex;flex-direction:column;min-height:560px;overflow:hidden;}
+  .copilot-workspace-header{padding:18px 20px;border-bottom:1px solid var(--border-hairline);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .copilot-workspace-header h2{font-size:16px;margin:0 0 5px;font-weight:600;}
+  .copilot-workspace-header p{font-size:11.5px;color:var(--text-secondary);line-height:1.5;max-width:620px;}
+  .copilot-model-status{display:flex;align-items:center;gap:7px;white-space:nowrap;color:var(--evidence);font-size:11px;}
+  .copilot-quick{padding:14px 18px;border-bottom:1px solid var(--border-hairline);display:flex;gap:8px;flex-wrap:wrap;}
+  .copilot-quick .qp-btn{padding:8px 11px;font-size:11px;}
+  .copilot-thread{flex:1;padding:20px;overflow:auto;display:flex;flex-direction:column;gap:12px;min-height:290px;}
+  .copilot-thread .msg.assistant{max-width:78%;}
+  .copilot-thread .msg.user{max-width:72%;}
+  .copilot-main-form{display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--border-hairline);}
+  .copilot-main-form input{flex:1;background:var(--bg-card-raised);border:1px solid var(--border-hairline-strong);border-radius:8px;color:var(--text-primary);padding:11px 12px;outline:none;}
+  .copilot-main-form input:focus{border-color:var(--accent);}
+  .copilot-context-card{padding:18px;align-self:start;}
+  .copilot-context-card h3{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:14px;}
+  .context-line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border-hairline);font-size:11.5px;}
+  .context-line:last-child{border-bottom:0;}
+  .context-line span:first-child{color:var(--text-secondary);}
+  .context-line strong{font-family:var(--mono);font-weight:500;text-align:right;}
+  .context-safety{margin-top:14px;padding:10px 11px;border-left:2px solid var(--unknown);background:rgba(217,164,65,.07);font-size:10.5px;line-height:1.5;color:var(--text-secondary);}
+
+  .section-view-note{font-size:10.5px;color:var(--text-muted);margin-top:8px;}
+  .nav-link{width:100%;}
+  .nav-link.active{box-shadow:inset 2px 0 0 var(--accent);}
+
+  @media(max-width:1050px){
+    #copilotMain{grid-template-columns:1fr;}
+    .content[data-view="hotspots"] #hotspotsSection{display:block;}
+    .content[data-view="hotspots"] #analyticsSection{grid-template-columns:1fr;}
+  }
 </style>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/></head>
 <body>
+&lt;!-- HeatShield Day 10.5 SPA workspace navigation --&gt;
+
 &lt;!-- HeatShield Day 10.4 approved production design --&gt;
 
 <div class="app">
@@ -402,12 +501,12 @@
 </div>
 </div>
 <nav class="nav">
-<button class="nav-link active" data-jump="overview"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><rect height="8" rx="1.5" width="8" x="3" y="3"></rect><rect height="8" rx="1.5" width="8" x="13" y="3"></rect><rect height="8" rx="1.5" width="8" x="3" y="13"></rect><rect height="8" rx="1.5" width="8" x="13" y="13"></rect></svg> Overview</button>
-<button class="nav-link" data-jump="thermal"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M9 4 L3 6 V20 L9 18 M9 4 L15 6 M9 4 V18 M15 6 L21 4 V18 L15 20 M15 6 V20 M9 18 L15 20"></path></svg> Thermal Map</button>
-<button class="nav-link" data-jump="hotspots"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M12 2C8 6 6 9.5 6 13a6 6 0 0 0 12 0c0-3.5-2-7-6-11Z"></path></svg> Hotspots</button>
-<button class="nav-link" data-jump="evidence"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><circle cx="6" cy="6" r="2.4"></circle><circle cx="18" cy="18" r="2.4"></circle><circle cx="6" cy="18" r="2.4"></circle><path d="M6 8.4 V15.6 M8.4 6 H14 a4 4 0 0 1 4 4 v5.6"></path></svg> Explainability</button>
-<button class="nav-link" data-jump="actions"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M5 4h14v13l-4-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Recommendations</button>
-<button class="nav-link" id="openCopilotSidebar"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M12 3l1.7 4.6L18 9.3l-4.3 1.7L12 15.6l-1.7-4.6L6 9.3l4.3-1.7Z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"></path></svg> AI Copilot</button>
+<button class="nav-link active" data-view="overview"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><rect height="8" rx="1.5" width="8" x="3" y="3"></rect><rect height="8" rx="1.5" width="8" x="13" y="3"></rect><rect height="8" rx="1.5" width="8" x="3" y="13"></rect><rect height="8" rx="1.5" width="8" x="13" y="13"></rect></svg> Overview</button>
+<button class="nav-link" data-view="thermal"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M9 4 L3 6 V20 L9 18 M9 4 L15 6 M9 4 V18 M15 6 L21 4 V18 L15 20 M15 6 V20 M9 18 L15 20"></path></svg> Thermal Map</button>
+<button class="nav-link" data-view="hotspots"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M12 2C8 6 6 9.5 6 13a6 6 0 0 0 12 0c0-3.5-2-7-6-11Z"></path></svg> Hotspots</button>
+<button class="nav-link" data-view="evidence"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><circle cx="6" cy="6" r="2.4"></circle><circle cx="18" cy="18" r="2.4"></circle><circle cx="6" cy="18" r="2.4"></circle><path d="M6 8.4 V15.6 M8.4 6 H14 a4 4 0 0 1 4 4 v5.6"></path></svg> Explainability</button>
+<button class="nav-link" data-view="actions"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M5 4h14v13l-4-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Recommendations</button>
+<button class="nav-link" data-view="copilot"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M12 3l1.7 4.6L18 9.3l-4.3 1.7L12 15.6l-1.7-4.6L6 9.3l4.3-1.7Z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"></path></svg> AI Copilot</button>
 </nav>
 <div class="sidebar-spacer"></div>
 <div class="thermal-source">
@@ -437,17 +536,17 @@
 <button class="btn-primary" id="openCopilotTop">✦ AI Copilot</button>
 </div>
 </div>
-<div class="content">
+<div class="content" data-view="overview">
 <!-- PAGE HEADER -->
-<div class="page-header" id="overviewSection">
+<div class="workspace-view-header page-header" id="overviewSection">
 <div>
-<div class="ph-eyebrow">Urban Heat Decision Intelligence</div>
-<div class="ph-title">Heat Priority Dashboard</div>
-<div class="ph-subtitle">Hyperlocal thermal evidence and explainable planning intelligence</div>
-<div class="ph-safety">Planning priority ≠ medical-risk probability</div>
+<div class="ph-eyebrow" id="viewEyebrow">Urban Heat Decision Intelligence</div>
+<div class="ph-title" id="viewTitle">Heat Priority Dashboard</div>
+<div class="ph-subtitle" id="viewSubtitle">Hyperlocal thermal evidence and explainable planning intelligence</div>
+<div class="ph-safety" id="viewSafety">Planning priority ≠ medical-risk probability</div>
 </div>
 <div class="ph-right">
-<div class="scope-badge"><b>Scenario Replay</b> · Not Live Current Heat</div>
+<div class="scope-badge" id="viewScopeBadge"><b>Scenario Replay</b> · Not Live Current Heat</div>
 </div>
 </div>
 <!-- KPI ROW -->
@@ -537,7 +636,7 @@
 </div>
 </div>
 <!-- ANALYTICS ROW -->
-<div class="analytics-row">
+<div class="analytics-row" id="analyticsSection">
 <div class="a-card">
 <div class="a-title">Priority Composition</div>
 <div class="donut-wrap">
@@ -547,9 +646,6 @@
 </div>
 <div class="a-card" id="comparisonCard">
 <div class="a-title">Hotspot Comparison</div>
-
-
-
 <div id="comparisonBars"></div></div>
 <div class="a-card">
 <div class="a-title">Top Hotspots</div>
@@ -562,9 +658,7 @@
 </div>
 </div>
 <!-- EXPLAINABILITY -->
-<div class="section-title" id="evidenceSection">Verified Evidence Behind the Priority</div>
-<div class="section-subtitle">HeatShield preserves the distinction between observed, derived, inferred, unknown and withheld evidence.</div>
-<div class="explain-grid">
+<section class="evidence-group" id="evidenceGroup"><div class="section-title" id="evidenceSection">Verified Evidence Behind the Priority</div><div class="section-subtitle">HeatShield preserves the distinction between observed, derived, inferred, unknown and withheld evidence.</div><div class="explain-grid">
 <div class="evidence-card" id="evidenceRows"></div>
 <div class="completeness-card">
 <div class="completeness-title">Evidence Completeness</div>
@@ -572,46 +666,52 @@
 <div class="status-row"><span class="status-name">Adaptive Capacity</span><span class="status-chip unknown" id="capacityStatus">UNKNOWN</span></div>
 <div class="status-row"><span class="status-name">Medical Risk Probability</span><span class="status-chip withheld" id="medicalStatus">WITHHELD</span></div>
 </div>
-</div>
+</div><div class="safety-strip">
+        HeatShield does not convert planning priority into a medical-risk probability. Current mapped objects are not interpreted as people or occupancy.
+      </div></section>
+
+
 <section id="actionsSection" style="margin-bottom:20px;">
 <div class="section-title">Controlled Recommendations</div>
 <div class="section-subtitle">Every action is selected from the versioned HeatShield recommendation catalog.</div>
 <div id="allRecommendations" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;"></div>
-</section><div class="safety-strip">
-        HeatShield does not convert planning priority into a medical-risk probability. Current mapped objects are not interpreted as people or occupancy.
-      </div>
-<footer style="display:flex;justify-content:space-between;border-top:1px solid var(--border-hairline);padding-top:16px;color:var(--text-muted);font-size:9.5px;">
+</section>
+<section aria-label="HeatShield Copilot workspace" id="copilotMain">
+<article class="copilot-workspace">
+<div class="copilot-workspace-header">
+<div>
+<h2>HeatShield Copilot</h2>
+<p>Ask about verified priorities, historical thermal metrics, hotspot comparisons, missing evidence, or controlled actions. Qwen routes intent locally; the deterministic evidence renderer remains the factual authority.</p>
+</div>
+<div class="copilot-model-status"><span class="dot evidence"></span><span id="copilotStatus">Checking local Qwen…</span><span class="model-tag" id="copilotModel">qwen3:1.7b</span></div>
+</div>
+<div class="copilot-quick">
+<button class="qp-btn" data-prompt="Why is Hotspot 2 prioritized?">Why priority?</button>
+<button class="qp-btn" data-prompt="Compare hotspots">Compare hotspots</button>
+<button class="qp-btn" data-prompt="What actions should we consider?">Controlled actions</button>
+<button class="qp-btn" data-prompt="What evidence is missing?">Missing evidence</button>
+</div>
+<div class="copilot-thread" id="thread">
+<div class="msg assistant">Ask a grounded question. HeatShield will not invent missing evidence or medical-risk probabilities.</div>
+</div>
+<form class="copilot-main-form" id="copilotForm">
+<input id="copilotInput" maxlength="2000" placeholder="Ask HeatShield about verified evidence..."/>
+<button class="btn-primary" id="sendButton" type="submit">Ask Copilot</button>
+</form>
+</article>
+<aside class="copilot-context-card">
+<h3>Active Grounding Context</h3>
+<div id="copilotContext"></div>
+<div class="context-safety">Planning priority is not a medical-risk probability. UNKNOWN and WITHHELD states remain explicit.</div>
+</aside>
+</section><footer style="display:flex;justify-content:space-between;border-top:1px solid var(--border-hairline);padding-top:16px;color:var(--text-muted);font-size:9.5px;">
 <span>FortyGuard thermal evidence · Deterministic HeatShield priority engine · Local grounded AI</span>
 <span id="evidenceHash">Evidence lineage loading…</span>
 </footer></div>
 </div>
 </div>
 <!-- AI COPILOT DRAWER -->
-<div class="scrim" id="scrim"></div>
-<div class="drawer" id="drawer">
-<div class="drawer-header">
-<div class="drawer-title-row">
-<span class="drawer-title">HeatShield Copilot</span>
-<button class="drawer-close" id="closeDrawer">✕</button>
-</div>
-<div class="model-row">
-<span class="dot evidence"></span>
-<span class="status-text">Local Qwen Ready</span>
-<span class="model-tag">qwen3:1.7b</span>
-</div>
-<div class="drawer-support">Qwen routes intent locally. Deterministic HeatShield evidence writes the factual answer.</div>
-</div>
-<div class="quick-prompts">
-<button class="qp-btn" data-prompt="Why is Hotspot 2 prioritized?">Why is Hotspot 2 prioritized?</button>
-<button class="qp-btn" data-prompt="Compare hotspots">Compare hotspots</button>
-<button class="qp-btn" data-prompt="What actions should we consider?">What actions should we consider?</button>
-<button class="qp-btn" data-prompt="What evidence is missing?">What evidence is missing?</button>
-</div>
-<div class="thread" id="thread"><div class="msg assistant">Ask about verified priorities, historical thermal metrics, comparisons, missing evidence, or controlled actions.</div></div>
-<form class="drawer-input-row" id="copilotForm">
-<input class="drawer-input" id="copilotInput" placeholder="Ask about verified evidence..."/>
-<button class="btn-primary" id="sendButton" type="submit">Ask</button></form>
-</div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=10.4.0"></script></body>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=10.5.0"></script></body>
 </html>
