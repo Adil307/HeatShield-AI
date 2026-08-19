@@ -2,8 +2,17 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
+from app.core.config import get_settings
 from app.core.paths import backend_path
+from app.providers.fortyguard import FortyGuardClient, FortyGuardError
+from app.schemas.fortyguard import HeatmapRequest
 from app.services.dashboard_snapshot import DashboardSnapshotError, build_dashboard_snapshot
+from app.services.live_thermal_analysis import (
+    MAX_DEMO_AOI_SQ_MILES,
+    LiveThermalAnalysisError,
+    run_live_thermal_analysis,
+    validate_live_request,
+)
 
 router = APIRouter()
 DAY44_PATH = backend_path("data/processed/day44_scenario_replay.json")
@@ -13,6 +22,7 @@ DAY7_PATH = backend_path("data/processed/day7_explainability_guard.json")
 DAY8_PATH = backend_path("data/processed/day8_controlled_recommendations.json")
 CATALOG_PATH = backend_path("config/day8_action_catalog.json")
 RAW_HEATMAP_PATH = backend_path("data/raw/official_heatmap_completed.json")
+LIVE_CACHE_DIR = backend_path("data/cache/day11")
 
 @router.get("/overview")
 async def dashboard_overview() -> dict:
@@ -38,3 +48,48 @@ async def dashboard_health() -> dict:
         "raw_heatmap_available": RAW_HEATMAP_PATH.exists(),
         "network_calls_per_health_check": 0,
     }
+
+
+def make_live_client() -> FortyGuardClient:
+    return FortyGuardClient(get_settings())
+
+
+@router.get("/live-analysis/status")
+async def live_analysis_status() -> dict:
+    settings = get_settings()
+    cache_entries = len(list(LIVE_CACHE_DIR.glob("tcm_*.json"))) if LIVE_CACHE_DIR.exists() else 0
+    return {
+        "status": "ready" if settings.api_key_configured else "api_key_required",
+        "api_key_configured": settings.api_key_configured,
+        "api_key_value_exposed": False,
+        "analytic_type": "tcm",
+        "max_demo_aoi_sq_miles": MAX_DEMO_AOI_SQ_MILES,
+        "cache_entries": cache_entries,
+        "fresh_mode_scope": "verified_thermal_evidence_only",
+    }
+
+
+@router.post("/live-analysis")
+async def dashboard_live_analysis(request: HeatmapRequest) -> dict:
+    try:
+        # Validate before constructing a provider client so invalid/oversized AOIs
+        # are rejected without requiring credentials or touching the network.
+        validate_live_request(request)
+        settings = get_settings()
+        client = FortyGuardClient(settings) if settings.api_key_configured else None
+        return await run_live_thermal_analysis(
+            request,
+            client=client,
+            cache_dir=LIVE_CACHE_DIR,
+        )
+    except LiveThermalAnalysisError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except FortyGuardError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": str(exc),
+                "provider_status_code": exc.status_code,
+                "provider_response": exc.response_body,
+            },
+        ) from exc

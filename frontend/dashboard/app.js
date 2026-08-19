@@ -1,4 +1,4 @@
-const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview" };
+const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
 const $ = (id) => document.getElementById(id);
 const fmt = (v,d=1) => typeof v === "number" && Number.isFinite(v) ? v.toFixed(d) : "—";
 const metric = (v,s="",d=1) => typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(d)}${s}` : "—";
@@ -40,6 +40,13 @@ const VIEW_COPY = {
     safety:"Recommendations do not promise medical outcomes or guaranteed cooling effects",
     scope:"Controlled action catalog"
   },
+  live:{
+    eyebrow:"Fresh FortyGuard Thermal Evidence",
+    title:"Live Analysis",
+    subtitle:"Submit the current map viewport as a fresh provider-backed TCM analysis",
+    safety:"Fresh mode shows temperature evidence only; no planning priority or medical-risk score is inferred",
+    scope:"Fresh provider request · Controlled scope"
+  },
   copilot:{
     eyebrow:"Evidence-Grounded Assistant",
     title:"HeatShield Assistant",
@@ -54,6 +61,12 @@ function featureTemperature(feature){const p=feature?.properties||{};for(const k
 function selectedHotspot(){return state.snapshot?.hotspots?.find(h=>h.hotspot_rank===state.selectedRank)||null;}
 function featureCenter(feature){const layer=L.geoJSON(feature);const bounds=layer.getBounds();return bounds.isValid()?bounds.getCenter():null;}
 
+function syncScenarioBar(){
+  const label=$("scenarioLabel");
+  if(!label)return;
+  label.textContent=state.activeView==="live"?"Fresh FortyGuard Thermal Analysis":state.replayScenarioLabel;
+}
+
 function activateView(view,{updateHash=true}={}){
   if(!VIEW_COPY[view]) view="overview";
   state.activeView=view;
@@ -62,9 +75,10 @@ function activateView(view,{updateHash=true}={}){
   document.querySelectorAll('.nav-link[data-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));
   const copy=VIEW_COPY[view];
   $("viewEyebrow").textContent=copy.eyebrow;$("viewTitle").textContent=copy.title;$("viewSubtitle").textContent=copy.subtitle;$("viewSafety").textContent=copy.safety;$("viewScopeBadge").textContent=copy.scope;
+  syncScenarioBar();
   if(updateHash&&location.hash!==`#${view}`) history.replaceState(null,"",`#${view}`);
   window.scrollTo({top:0,behavior:"smooth"});
-  if(view==="thermal") setTimeout(renderMap,30);
+  if(view==="thermal"||view==="live") setTimeout(()=>{renderMap();updateLiveViewportInfo();},30);
   if(view==="copilot") setTimeout(()=>$("copilotInput")?.focus(),80);
 }
 
@@ -120,16 +134,32 @@ function ensureBasemaps(){
 }
 
 function renderMap(){
-  const geo=state.snapshot?.heatmap_geojson, fallback=$("mapFallback");
+  const liveMode=state.activeView==="live"&&state.liveAnalysis;
+  const geo=liveMode?state.liveAnalysis?.heatmap_geojson:state.snapshot?.heatmap_geojson;
+  const fallback=$("mapFallback");
   if(!geo?.features?.length||typeof L==="undefined"){$("thermalMap").classList.add("hidden");fallback.classList.remove("hidden");return;}
   $("thermalMap").classList.remove("hidden");fallback.classList.add("hidden");
-  if(!state.map){state.map=L.map("thermalMap",{zoomControl:true,attributionControl:true,preferCanvas:true});ensureBasemaps();}else{ensureBasemaps();}
+  if(!state.map){
+    state.map=L.map("thermalMap",{zoomControl:true,attributionControl:true,preferCanvas:true});
+    ensureBasemaps();
+    state.map.on("moveend",updateLiveViewportInfo);
+  }else{ensureBasemaps();}
   if(state.polygonLayer)state.map.removeLayer(state.polygonLayer);if(state.heatLayer)state.map.removeLayer(state.heatLayer);if(state.markerLayer)state.map.removeLayer(state.markerLayer);
   const vals=geo.features.map(featureTemperature).filter(Number.isFinite),min=vals.length?Math.min(...vals):0,max=vals.length?Math.max(...vals):1,span=Math.max(max-min,1e-9);
-  state.polygonLayer=L.geoJSON(geo,{style:()=>({color:"#5C6C82",weight:.35,fillColor:"#6E63F0",fillOpacity:.035}),onEachFeature:(f,layer)=>{const tile=tileIdOf(f),temp=featureTemperature(f);layer.bindTooltip(`<strong>Tile ${tile??"—"}</strong><br>${Number.isFinite(temp)?`${temp.toFixed(2)} °C historical air temperature`:"Verified FortyGuard thermal evidence"}`,{sticky:true,direction:"top"});}}).addTo(state.map);
+  const sourceLabel=liveMode?"Fresh FortyGuard air temperature":"Historical air temperature";
+  state.polygonLayer=L.geoJSON(geo,{style:()=>({color:"#5C6C82",weight:.35,fillColor:"#6E63F0",fillOpacity:.035}),onEachFeature:(f,layer)=>{const tile=tileIdOf(f),temp=featureTemperature(f);layer.bindTooltip(`<strong>Tile ${tile??"—"}</strong><br>${Number.isFinite(temp)?`${temp.toFixed(2)} °C ${sourceLabel.toLowerCase()}`:"Verified FortyGuard thermal evidence"}`,{sticky:true,direction:"top"});}}).addTo(state.map);
   if(typeof L.heatLayer==="function"){const points=[];for(const f of geo.features){const c=featureCenter(f),t=featureTemperature(f);if(!c||!Number.isFinite(t))continue;points.push([c.lat,c.lng,Math.max(.05,Math.min(1,(t-min)/span))]);}state.heatLayer=L.heatLayer(points,{radius:48,blur:34,maxZoom:17,minOpacity:.22,gradient:{0:"#2b67b1",.25:"#2fa6ca",.45:"#55c778",.65:"#d8ca48",.82:"#ef8b3c",1:"#e8543a"}}).addTo(state.map);}
-  state.markerLayer=L.layerGroup().addTo(state.map);for(const h of state.snapshot.hotspots){const f=geo.features.find(x=>tileIdOf(x)===Number(h.tile_id));if(!f)continue;const c=featureCenter(f);if(!c)continue;const pos=state.snapshot.planning_order.indexOf(h.hotspot_rank)+1;const icon=L.divIcon({className:`heatshield-marker rank-${pos}`,html:`<div>${h.hotspot_rank}</div>`,iconSize:pos===1?[34,34]:[30,30],iconAnchor:pos===1?[17,17]:[15,15]});const marker=L.marker(c,{icon}).addTo(state.markerLayer);marker.bindTooltip(`Hotspot ${h.hotspot_rank} • Priority ${fmt(h.planning_priority,2)}`,{direction:"top"});marker.on("click",()=>selectHotspot(h.hotspot_rank));}
-  const bounds=state.polygonLayer.getBounds();if(bounds.isValid())state.map.fitBounds(bounds,{padding:[24,24],maxZoom:15});setTimeout(()=>state.map.invalidateSize(),80);
+  state.markerLayer=L.layerGroup().addTo(state.map);
+  if(liveMode){
+    for(const h of state.liveAnalysis.hottest_tiles||[]){const f=geo.features.find(x=>tileIdOf(x)===Number(h.tile_id));if(!f)continue;const c=featureCenter(f);if(!c)continue;const pos=Number(h.hotspot_rank)||1;const icon=L.divIcon({className:`heatshield-marker rank-${pos}`,html:`<div>${pos}</div>`,iconSize:pos===1?[34,34]:[30,30],iconAnchor:pos===1?[17,17]:[15,15]});const marker=L.marker(c,{icon}).addTo(state.markerLayer);marker.bindTooltip(`Hottest tile #${pos} • ${metric(h.temperature_celsius,"°C",2)}`,{direction:"top"});}
+  }else{
+    for(const h of state.snapshot.hotspots){const f=geo.features.find(x=>tileIdOf(x)===Number(h.tile_id));if(!f)continue;const c=featureCenter(f);if(!c)continue;const pos=state.snapshot.planning_order.indexOf(h.hotspot_rank)+1;const icon=L.divIcon({className:`heatshield-marker rank-${pos}`,html:`<div>${h.hotspot_rank}</div>`,iconSize:pos===1?[34,34]:[30,30],iconAnchor:pos===1?[17,17]:[15,15]});const marker=L.marker(c,{icon}).addTo(state.markerLayer);marker.bindTooltip(`Hotspot ${h.hotspot_rank} • Priority ${fmt(h.planning_priority,2)}`,{direction:"top"});marker.on("click",()=>selectHotspot(h.hotspot_rank));}
+  }
+  const bounds=state.polygonLayer.getBounds();if(bounds.isValid())state.map.fitBounds(bounds,{padding:[24,24],maxZoom:15});
+  if($("mapLayerLabelText"))$("mapLayerLabelText").textContent=liveMode?"Fresh FortyGuard Temperature":"Historical Air Temperature";
+  if($("mapLegendTitle"))$("mapLegendTitle").textContent=liveMode?"Fresh FortyGuard Temperature":"Historical Air Temperature";
+  if($("mapEvidenceNote"))$("mapEvidenceNote").textContent=liveMode?"Fresh FortyGuard thermal job · relative hottest tiles only":"FortyGuard thermal evidence · Satellite view: Esri World Imagery";
+  setTimeout(()=>{state.map.invalidateSize();updateLiveViewportInfo();},80);
 }
 
 function renderKpis(){const s=state.snapshot.summary;const heat=state.snapshot.hotspots.map(h=>h.metrics.historical_heat_index_celsius).filter(Number.isFinite);const humid=state.snapshot.hotspots.map(h=>h.metrics.historical_relative_humidity_percent).filter(Number.isFinite);$("kpiTemp").textContent=metric(s.max_historical_air_temperature_celsius,"°C",2);$("kpiHeatIndex").textContent=heat.length?`${Math.max(...heat).toFixed(1)}°C`:"—";$("kpiHotspots").textContent=s.hotspot_count??"—";$("kpiPriority").textContent=fmt(s.highest_priority_score,2);$("kpiPriorityRank").textContent=s.highest_priority_rank?`Hotspot ${s.highest_priority_rank}`:"Verified planning order";$("kpiHumidity").textContent=humid.length?`${(humid.reduce((a,b)=>a+b,0)/humid.length).toFixed(1)}%`:"—";$("kpiTiles").textContent=s.heatmap_feature_count??"—";}
@@ -198,6 +228,94 @@ function renderRecommendations(h){
   }).join("");
 }
 function renderCopilotContext(h){if(!h||!$("copilotContext"))return;const s=h.evidence_status;$("copilotContext").innerHTML=[["Selected hotspot",`Hotspot ${h.hotspot_rank}`],["Planning priority",`${fmt(h.planning_priority,2)}/100`],["Tile",String(h.tile_id??"—")],["Operational vulnerability",humanStatus(s.verified_operational_vulnerability,"unknown")],["Adaptive capacity",humanStatus(s.verified_adaptive_capacity,"unknown")],["Medical risk probability",humanStatus(s.medical_risk_probability,"withheld")]].map(([a,b])=>`<div class="context-line"><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join("");}
+
+function setDefaultLiveDateTime(){
+  const now=new Date();
+  const date=now.toISOString().slice(0,10);
+  const hour=now.toISOString().slice(11,13)+":00";
+  if($("liveDate")&&!$("liveDate").value)$("liveDate").value=date;
+  if($("liveTime")&&!$("liveTime").value)$("liveTime").value=hour;
+}
+
+function currentViewportFeatureCollection(){
+  if(!state.map)return null;
+  const b=state.map.getBounds();
+  if(!b?.isValid?.())return null;
+  const west=b.getWest(),east=b.getEast(),south=b.getSouth(),north=b.getNorth();
+  return {type:"FeatureCollection",features:[{type:"Feature",properties:{source:"heatshield_day11_map_viewport"},geometry:{type:"Polygon",coordinates:[[[west,south],[east,south],[east,north],[west,north],[west,south]]]}}]};
+}
+
+function approximateViewportSqMiles(){
+  if(!state.map)return null;
+  const b=state.map.getBounds();if(!b?.isValid?.())return null;
+  const centerLat=(b.getNorth()+b.getSouth())/2;
+  const latMiles=Math.abs(b.getNorth()-b.getSouth())*69.0;
+  const lonMiles=Math.abs(b.getEast()-b.getWest())*69.172*Math.cos(centerLat*Math.PI/180);
+  return latMiles*lonMiles;
+}
+
+function updateLiveViewportInfo(){
+  const el=$("liveViewportInfo");if(!el||!state.map)return;
+  const area=approximateViewportSqMiles();
+  if(!Number.isFinite(area)){el.textContent="Current map viewport will be used.";return;}
+  el.textContent=`Current map viewport ≈ ${area.toFixed(2)} mi². Demo-safe limit: 10 mi².`;
+}
+
+function formatApiError(payload,status){
+  const detail=payload?.detail;
+  if(typeof detail==="string")return detail;
+  if(detail&&typeof detail==="object")return detail.message||detail.provider_response?.message||`HTTP ${status}`;
+  return payload?.message||`HTTP ${status}`;
+}
+
+async function loadLiveAnalysisStatus(){
+  const el=$("liveApiStatus");
+  try{
+    const response=await fetch("/api/v1/dashboard/live-analysis/status"),payload=await response.json();
+    state.liveApiReady=Boolean(payload.api_key_configured);
+    if(el)el.textContent=state.liveApiReady?`FortyGuard key ready · ${payload.cache_entries??0} cached live request(s)`:`FortyGuard API key is not configured in backend/.env`;
+  }catch(error){state.liveApiReady=false;if(el)el.textContent=`Live analysis status unavailable: ${error.message}`;}
+}
+
+function renderLiveResult(payload){
+  const summary=payload?.summary||{},prov=payload?.provenance||{};
+  $("liveResult")?.classList.add("visible");
+  if($("liveMaxTemp"))$("liveMaxTemp").textContent=metric(summary.maximum_temperature_celsius,"°C",2);
+  if($("liveMeanTemp"))$("liveMeanTemp").textContent=metric(summary.mean_temperature_celsius,"°C",2);
+  if($("liveTileCount"))$("liveTileCount").textContent=String(summary.tile_count??"—");
+  if($("liveCacheState"))$("liveCacheState").textContent=prov.cache_hit?"Cache reused":"Fresh job";
+  if($("liveHottestTiles"))$("liveHottestTiles").innerHTML=(payload.hottest_tiles||[]).map(h=>`<div class="live-hot-row"><span>#${esc(h.hotspot_rank)} · Tile ${esc(h.tile_id)}</span><strong>${esc(metric(h.temperature_celsius,"°C",2))}</strong></div>`).join("");
+  if($("liveProvenance"))$("liveProvenance").textContent=`Activity ID: ${prov.activity_id||"—"} · Request ${String(prov.request_hash||"").slice(0,12)}… · Evidence ${String(prov.source_sha256||"").slice(0,12)}…`;
+}
+
+async function runLiveAnalysis(){
+  const status=$("liveRunStatus"),button=$("liveRunButton");
+  const polygon=currentViewportFeatureCollection();
+  if(!polygon){if(status){status.className="live-run-status error";status.textContent="Map viewport is not ready yet.";}return;}
+  const area=approximateViewportSqMiles();
+  if(Number.isFinite(area)&&area>10.15){if(status){status.className="live-run-status error";status.textContent=`Viewport is about ${area.toFixed(2)} mi². Zoom in below 10 mi² before submitting.`;}return;}
+  const request={polygon_aoi:polygon,date_time:{start_date:$("liveDate").value,filter_type:1,start_time:$("liveTime").value},granularity:Number($("liveGranularity").value),analytic_type:"tcm"};
+  if(button){button.disabled=true;button.textContent="Running FortyGuard…";}
+  if(status){status.className="live-run-status";status.textContent="Submitting one controlled provider job and polling its activity ID…";}
+  try{
+    const response=await fetch("/api/v1/dashboard/live-analysis",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request)});
+    const payload=await response.json();
+    if(!response.ok)throw new Error(formatApiError(payload,response.status));
+    state.liveAnalysis=payload;
+    renderLiveResult(payload);
+    renderMap();
+    if(status){status.className="live-run-status success";status.textContent=payload.provenance?.cache_hit?"Verified cached completion reused; no new provider job was created.":"Fresh FortyGuard job completed and verified thermal tiles are on the map.";}
+  }catch(error){if(status){status.className="live-run-status error";status.textContent=`Live analysis failed: ${error.message}`;}}
+  finally{if(button){button.disabled=false;button.textContent="Run FortyGuard Analysis";}}
+}
+
+function resetLiveAnalysis(){
+  state.liveAnalysis=null;
+  $("liveResult")?.classList.remove("visible");
+  if($("liveRunStatus")){ $("liveRunStatus").className="live-run-status";$("liveRunStatus").textContent="Historical replay restored."; }
+  activateView("thermal");
+}
+
 function selectHotspot(rank){state.selectedRank=rank;renderSelected();if(state.activeView==="thermal")renderMap();}
 function addMessage(role,text){const thread=$("thread"),msg=document.createElement("div");msg.className=`msg ${role}`;msg.textContent=text;thread.appendChild(msg);thread.scrollTop=thread.scrollHeight;}
 async function askCopilot(query){if(!query)return;activateView("copilot");addMessage("user",query);$("sendButton").disabled=true;$("sendButton").textContent="Checking evidence…";try{const response=await fetch("/api/v1/copilot/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query,mode:"auto",hotspot_rank:state.selectedRank})});const payload=await response.json();if(!response.ok)throw new Error(payload.detail||`HTTP ${response.status}`);addMessage("assistant",payload.answer||"No grounded answer was returned.");}catch(error){addMessage("assistant",`The assistant is unavailable right now: ${error.message}. The verified dashboard evidence is still available.`);}finally{$("sendButton").disabled=false;$("sendButton").textContent="Send";}}
@@ -206,10 +324,13 @@ async function init(){try{const response=await fetch("/api/v1/dashboard/overview
     state.selectedRank=payload.planning_order?.[0]??payload.hotspots?.[0]?.hotspot_rank??null;
     const scenarioRaw=payload.scenario_mode??payload.summary?.scenario_mode??payload.mode??"scenario_replay";
     const scenarioText=String(scenarioRaw).replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase());
-    if($("scenarioLabel")) $("scenarioLabel").textContent=scenarioText;const hash=payload.provenance?.day7_artifact_sha256;$("evidenceHash").textContent=hash?`Evidence SHA ${hash.slice(0,12)}…`:"Evidence lineage available";renderKpis();renderComparison();renderSelected();const initial=(location.hash||"#overview").slice(1);activateView(VIEW_COPY[initial]?initial:"overview",{updateHash:false});}catch(error){$("mapFallback").classList.remove("hidden");$("mapFallback").innerHTML=`<strong>Dashboard evidence could not be loaded.</strong><span>${esc(error.message)}</span>`;}loadCopilotStatus();}
+    state.replayScenarioLabel=scenarioText;
+    if($("scenarioLabel")) $("scenarioLabel").textContent=scenarioText;const hash=payload.provenance?.day7_artifact_sha256;$("evidenceHash").textContent=hash?`Evidence SHA ${hash.slice(0,12)}…`:"Evidence lineage available";renderKpis();renderComparison();renderSelected();const initial=(location.hash||"#overview").slice(1);activateView(VIEW_COPY[initial]?initial:"overview",{updateHash:false});}catch(error){$("mapFallback").classList.remove("hidden");$("mapFallback").innerHTML=`<strong>Dashboard evidence could not be loaded.</strong><span>${esc(error.message)}</span>`;}loadCopilotStatus();setDefaultLiveDateTime();loadLiveAnalysisStatus();}
 
 document.querySelectorAll(".nav-link[data-view]").forEach(button=>button.addEventListener("click",()=>activateView(button.dataset.view)));
 $("compareHotspotsButton")?.addEventListener("click",()=>activateView("hotspots"));
+$("openLiveAnalysisTop")?.addEventListener("click",()=>activateView("live"));
+$("historicalReplayButton")?.addEventListener("click",()=>activateView("overview"));
 $("openCopilotTop")?.addEventListener("click",()=>activateView("copilot"));
 $("viewGroundedExplanation")?.addEventListener("click",()=>askCopilot(`Why is hotspot ${state.selectedRank} high priority?`));
 $("viewAllRecommendations")?.addEventListener("click",()=>activateView("actions"));
@@ -225,5 +346,7 @@ document.querySelectorAll("[data-intent]").forEach(button=>button.addEventListen
 $("copilotForm")?.addEventListener("submit",event=>{event.preventDefault();const input=$("copilotInput"),q=input.value.trim();if(!q)return;input.value="";askCopilot(q);});
 $("satelliteBasemapButton")?.addEventListener("click",()=>setBasemap("satellite"));
 $("streetBasemapButton")?.addEventListener("click",()=>setBasemap("streets"));
+$("liveAnalysisForm")?.addEventListener("submit",event=>{event.preventDefault();runLiveAnalysis();});
+$("liveResetButton")?.addEventListener("click",resetLiveAnalysis);
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(VIEW_COPY[view])activateView(view,{updateHash:false});});
 init();

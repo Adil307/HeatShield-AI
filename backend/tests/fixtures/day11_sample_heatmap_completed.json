@@ -1,0 +1,20 @@
+{
+  "error": false,
+  "status_code": 200,
+  "message": "Completed",
+  "data": {
+    "activity_id": "day11-fixture-activity",
+    "status": "Completed",
+    "result": {
+      "map_data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type":"Feature","properties":{"tile_id":1,"average_temperature":30.0,"min_temperature":30.0,"max_temperature":30.0},"geometry":{"type":"Polygon","coordinates":[[[-74.0000,40.7000],[-73.9990,40.7000],[-73.9990,40.7010],[-74.0000,40.7010],[-74.0000,40.7000]]]}},
+          {"type":"Feature","properties":{"tile_id":2,"average_temperature":31.0,"min_temperature":31.0,"max_temperature":31.0},"geometry":{"type":"Polygon","coordinates":[[[-73.9990,40.7000],[-73.9980,40.7000],[-73.9980,40.7010],[-73.9990,40.7010],[-73.9990,40.7000]]]}},
+          {"type":"Feature","properties":{"tile_id":3,"average_temperature":32.0,"min_temperature":32.0,"max_temperature":32.0},"geometry":{"type":"Polygon","coordinates":[[[-74.0000,40.7010],[-73.9990,40.7010],[-73.9990,40.7020],[-74.0000,40.7020],[-74.0000,40.7010]]]}},
+          {"type":"Feature","properties":{"tile_id":4,"average_temperature":33.0,"min_temperature":33.0,"max_temperature":33.0},"geometry":{"type":"Polygon","coordinates":[[[-73.9990,40.7010],[-73.9980,40.7010],[-73.9980,40.7020],[-73.9990,40.7020],[-73.9990,40.7010]]]}}
+        ]
+      }
+    }
+  }
+}
