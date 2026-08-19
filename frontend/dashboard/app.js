@@ -1,4 +1,4 @@
-const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveContextPriority:null, liveContextRequest:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
+const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveContextPriority:null, liveContextRequest:null, liveScenario:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
 const $ = (id) => document.getElementById(id);
 const fmt = (v,d=1) => typeof v === "number" && Number.isFinite(v) ? v.toFixed(d) : "—";
 const metric = (v,s="",d=1) => typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(d)}${s}` : "—";
@@ -53,6 +53,13 @@ const VIEW_COPY = {
     subtitle:"Ask a plain-language question about the historical replay or the completed fresh live analysis",
     safety:"Qwen may route intent, but verified tools and deterministic rendering remain the source of factual claims",
     scope:"Grounded assistant · Historical + live"
+  },
+  scenario:{
+    eyebrow:"Controlled What-If Comparison",
+    title:"Scenario Studio",
+    subtitle:"Compare the verified live baseline with explicit operational assumptions",
+    safety:"Scenario outputs are planning estimates, not measured future outcomes or predicted temperature reductions",
+    scope:"Day 15 · Scenario estimate"
   }
 };
 
@@ -66,6 +73,7 @@ function syncScenarioBar(){
   if(!label)return;
   if(state.activeView==="live") label.textContent="Fresh FortyGuard Thermal Analysis";
   else if(state.activeView==="copilot"&&state.liveContextPriority&&state.liveContextRequest) label.textContent="Fresh Live Analysis · Grounded Copilot";
+  else if(state.activeView==="scenario") label.textContent=state.liveScenario?"Fresh Live Analysis · Scenario Estimate":"Fresh Live Analysis · Scenario Studio";
   else label.textContent=state.replayScenarioLabel;
 }
 
@@ -82,6 +90,7 @@ function activateView(view,{updateHash=true}={}){
   window.scrollTo({top:0,behavior:"smooth"});
   if(view==="thermal"||view==="live") setTimeout(()=>{renderMap();updateLiveViewportInfo();},30);
   if(view==="copilot") setTimeout(()=>$("copilotInput")?.focus(),80);
+  if(view==="scenario") setTimeout(renderScenarioStudioBaseline,30);
 }
 
 
@@ -381,12 +390,109 @@ async function runLiveContextPriority(event){
     if(!response.ok)throw new Error(formatApiError(payload,response.status));
     state.liveContextPriority=payload;
     state.liveContextRequest={analysis_request:state.liveRequest,context_profile:contextProfile};
+    state.liveScenario=null;
+    $("scenarioResult")?.classList.remove("visible");
     renderLiveContextPriority(payload);
+    renderScenarioStudioBaseline();
     renderCopilotContext(selectedHotspot());
     syncScenarioBar();
-    if(status){status.className="live-run-status success";status.textContent="Authorized context verified. Evidence-adjusted live planning priority is now supported, and the Day 14 live copilot is unlocked.";}
+    if(status){status.className="live-run-status success";status.textContent="Authorized context verified. Evidence-adjusted live planning priority is supported; Day 14 Copilot and Day 15 Scenario Studio are now unlocked.";}
   }catch(error){if(status){status.className="live-run-status error";status.textContent=`Context verification failed: ${error.message}`;}}
   finally{if(button){button.disabled=false;button.textContent="Verify Context & Calculate Priority";}}
+}
+
+
+function scenarioPresetChanges(preset){
+  const profile=state.liveContextRequest?.context_profile;
+  if(!profile)throw new Error("Verify live operational context before running a scenario.");
+  if(preset==="strengthen_controls")return {
+    potable_water_access:"adequate",
+    shaded_or_cooled_recovery:"adequate",
+    work_rest_controls:"adequate",
+    heat_training_and_monitoring:"adequate"
+  };
+  if(preset==="cooled_recovery")return {shaded_or_cooled_recovery:"adequate"};
+  if(preset==="work_rest")return {work_rest_controls:"adequate"};
+  if(preset==="lower_exposure"){
+    const levels=["none","low","moderate","high"],index=levels.indexOf(profile.exposure_level);
+    if(index<=0)throw new Error("Exposure is already at the lowest scenario level.");
+    return {exposure_level:levels[index-1]};
+  }
+  if(preset==="lower_exertion"){
+    const levels=["low","moderate","high"],index=levels.indexOf(profile.physical_exertion);
+    if(index<=0)throw new Error("Physical exertion is already at the lowest scenario level.");
+    return {physical_exertion:levels[index-1]};
+  }
+  if(preset==="combined_controls_exposure"){
+    const levels=["none","low","moderate","high"],index=levels.indexOf(profile.exposure_level);
+    const lower=index>0?levels[index-1]:profile.exposure_level;
+    return {
+      exposure_level:lower,
+      potable_water_access:"adequate",
+      shaded_or_cooled_recovery:"adequate",
+      work_rest_controls:"adequate",
+      heat_training_and_monitoring:"adequate"
+    };
+  }
+  throw new Error("Choose a supported scenario preset.");
+}
+
+function renderScenarioStudioBaseline(){
+  const locked=$('scenarioLocked'),ready=$('scenarioReady'),button=$('scenarioRunButton');
+  const supported=Boolean(state.liveContextPriority&&state.liveContextRequest);
+  if(locked)locked.classList.toggle('hidden',supported);
+  if(ready)ready.classList.toggle('hidden',!supported);
+  if(button)button.disabled=!supported;
+  if(!supported)return;
+  const priority=state.liveContextPriority?.priority||{},selected=state.liveContextPriority?.selected_hotspot||{},context=state.liveContextPriority?.verified_context||{};
+  if($('scenarioTile'))$('scenarioTile').textContent=`Tile ${selected.tile_id??'—'}`;
+  if($('scenarioBaselineScore'))$('scenarioBaselineScore').textContent=priority.evidence_adjusted_priority_score==null?'—':`${fmt(priority.evidence_adjusted_priority_score,1)}/100`;
+  if($('scenarioBaselineBand'))$('scenarioBaselineBand').textContent=humanizeToken(priority.evidence_adjusted_priority_band||'—');
+  if($('scenarioHazard'))$('scenarioHazard').textContent=priority.hazard_planning_ordinal==null?'—':`${fmt(priority.hazard_planning_ordinal,0)}/100`;
+  if($('scenarioSource'))$('scenarioSource').textContent=context.source_ref||'Verified authorized context';
+}
+
+function renderScenarioResult(payload){
+  state.liveScenario=payload;
+  const result=$('scenarioResult');
+  result?.classList.add('visible');
+  const baseline=payload?.baseline||{},scenario=payload?.scenario||{},comparison=payload?.comparison||{},assumptions=payload?.assumptions||{};
+  if($('scenarioBeforeScore'))$('scenarioBeforeScore').textContent=baseline.evidence_adjusted_priority_score==null?'—':`${fmt(baseline.evidence_adjusted_priority_score,1)}/100`;
+  if($('scenarioAfterScore'))$('scenarioAfterScore').textContent=scenario.evidence_adjusted_priority_score==null?'—':`${fmt(scenario.evidence_adjusted_priority_score,1)}/100`;
+  if($('scenarioDelta')){
+    const delta=comparison.priority_delta_points;
+    $('scenarioDelta').textContent=typeof delta==='number'?`${delta>0?'+':''}${fmt(delta,1)} pts`:'—';
+    $('scenarioDelta').className=`scenario-delta ${delta<0?'lower':delta>0?'higher':'same'}`;
+  }
+  if($('scenarioBeforeBand'))$('scenarioBeforeBand').textContent=humanizeToken(baseline.evidence_adjusted_priority_band||'—');
+  if($('scenarioAfterBand'))$('scenarioAfterBand').textContent=humanizeToken(scenario.evidence_adjusted_priority_band||'—');
+  if($('scenarioInterpretation'))$('scenarioInterpretation').textContent=comparison.interpretation||'Scenario comparison available.';
+  if($('scenarioChanges'))$('scenarioChanges').innerHTML=(assumptions.changes||[]).map(item=>`<div class="scenario-change-row"><span>${esc(item.label)}</span><strong>${esc(humanizeToken(item.before))} → ${esc(humanizeToken(item.after))}</strong></div>`).join('')||'<div class="scenario-change-row"><span>No effective changes</span><strong>—</strong></div>';
+  if($('scenarioProvenance'))$('scenarioProvenance').textContent=`Scenario ${String(scenario.scenario_assumption_id||'').slice(0,20)}… · Thermal hazard held constant · Zero FortyGuard calls · Zero LLM calls`;
+  if($('scenarioThermalBoundary'))$('scenarioThermalBoundary').textContent=assumptions.thermal_hazard_assumption||'Verified thermal hazard is held constant; no temperature reduction is estimated.';
+  syncScenarioBar();
+}
+
+async function runLiveScenario(event){
+  event?.preventDefault?.();
+  const status=$('scenarioStatus'),button=$('scenarioRunButton'),preset=$('scenarioPreset')?.value||'';
+  if(!state.liveContextPriority||!state.liveContextRequest){
+    if(status){status.className='live-run-status error';status.textContent='Complete Day 13 live context verification first.';}
+    return;
+  }
+  let changes;
+  try{changes=scenarioPresetChanges(preset);}catch(error){if(status){status.className='live-run-status error';status.textContent=error.message;}return;}
+  const label=$('scenarioPreset')?.selectedOptions?.[0]?.textContent?.trim()||'Operational what-if scenario';
+  if(button){button.disabled=true;button.textContent='Calculating scenario…';}
+  if(status){status.className='live-run-status';status.textContent='Recomputing the transparent priority with explicit assumptions while holding verified thermal hazard constant…';}
+  try{
+    const response=await fetch('/api/v1/dashboard/live-analysis/scenario',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({context_request:state.liveContextRequest,scenario_label:label,scenario_changes:changes})});
+    const payload=await response.json();
+    if(!response.ok)throw new Error(formatApiError(payload,response.status));
+    renderScenarioResult(payload);
+    if(status){status.className='live-run-status success';status.textContent='Scenario estimate calculated. Assumptions are explicit and no physical temperature reduction was predicted.';}
+  }catch(error){if(status){status.className='live-run-status error';status.textContent=`Scenario could not be calculated: ${error.message}`;}}
+  finally{if(button){button.disabled=false;button.textContent='Run Scenario Comparison';}}
 }
 
 async function runLiveAnalysis(){
@@ -407,6 +513,8 @@ async function runLiveAnalysis(){
     state.liveEnrichment=null;
     state.liveContextPriority=null;
     state.liveContextRequest=null;
+    state.liveScenario=null;
+    $("scenarioResult")?.classList.remove("visible");
     $("liveDecisionResult")?.classList.remove("visible");
     renderCopilotContext(selectedHotspot());
     $("liveContextResult")?.classList.remove("visible");
@@ -425,6 +533,8 @@ function resetLiveAnalysis(){
   state.liveEnrichment=null;
   state.liveContextPriority=null;
   state.liveContextRequest=null;
+  state.liveScenario=null;
+  $("scenarioResult")?.classList.remove("visible");
   $("liveResult")?.classList.remove("visible");
   $("liveDecisionResult")?.classList.remove("visible");
   $("liveContextResult")?.classList.remove("visible");
@@ -496,6 +606,9 @@ $("liveAnalysisForm")?.addEventListener("submit",event=>{event.preventDefault();
 $("liveEnrichButton")?.addEventListener("click",runLiveEnrichment);
 $("liveContextForm")?.addEventListener("submit",runLiveContextPriority);
 $("liveAskAssistant")?.addEventListener("click",()=>{renderCopilotContext(selectedHotspot());activateView("copilot");});
+$("liveOpenScenario")?.addEventListener("click",()=>{renderScenarioStudioBaseline();activateView("scenario");});
+$("scenarioForm")?.addEventListener("submit",runLiveScenario);
+$("scenarioBackLive")?.addEventListener("click",()=>activateView("live"));
 $("liveResetButton")?.addEventListener("click",resetLiveAnalysis);
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(VIEW_COPY[view])activateView(view,{updateHash:false});});
 init();

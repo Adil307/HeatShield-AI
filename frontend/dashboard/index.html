@@ -443,6 +443,14 @@
   .content[data-view="copilot"] #actionsSection{display:none;}
   .content[data-view="copilot"] #copilotMain{display:grid;}
 
+  .content[data-view="scenario"] .kpi-row,
+  .content[data-view="scenario"] #thermalSection,
+  .content[data-view="scenario"] #analyticsSection,
+  .content[data-view="scenario"] #evidenceGroup,
+  .content[data-view="scenario"] #actionsSection,
+  .content[data-view="scenario"] #copilotMain{display:none;}
+  .content[data-view="scenario"] #scenarioMain{display:grid;}
+
   .workspace-view-header{margin-bottom:22px;}
   .workspace-view-header .ph-title{margin-bottom:4px;}
   .workspace-view-header .ph-safety{margin-top:8px;}
@@ -1237,8 +1245,51 @@
   .live-copilot-copy strong{display:block;color:var(--text-primary);font-size:10px;margin-bottom:3px;}
   .copilot-grounding-meta{display:block;margin-top:8px;padding-top:7px;border-top:1px solid var(--border-hairline);color:var(--evidence)!important;font-size:8px!important;line-height:1.4;}
 
-  @media (max-width:1020px){#liveAnalysisPanel{height:auto;min-height:420px;}}
-  @media (max-width:760px){.live-grid-2,.live-result-grid,.live-priority-highlight{grid-template-columns:1fr;}}
+  /* Day 15 — controlled live Scenario Studio */
+  .live-scenario-bridge{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border-top:1px solid var(--border-hairline);padding-top:11px;margin-top:2px;}
+  .live-scenario-copy{font-size:8.7px;line-height:1.48;color:var(--text-muted);max-width:430px;}
+  .live-scenario-copy strong{display:block;color:var(--text-primary);font-size:10px;margin-bottom:3px;}
+  #scenarioMain{display:none;grid-template-columns:minmax(0,1.45fr) minmax(280px,.55fr);gap:16px;min-height:560px;}
+  .scenario-workspace,.scenario-safety-card{background:var(--bg-card);border:1px solid var(--border-hairline);border-radius:10px;}
+  .scenario-workspace{padding:20px;display:grid;gap:16px;align-content:start;}
+  .scenario-workspace h2{font-size:17px;margin:0 0 5px;font-weight:650;}
+  .scenario-workspace p{font-size:11px;color:var(--text-secondary);line-height:1.55;max-width:720px;}
+  .scenario-lock{border:1px solid rgba(240,184,79,.3);background:rgba(240,184,79,.055);border-radius:9px;padding:14px;color:var(--text-secondary);font-size:10px;line-height:1.5;}
+  .scenario-lock strong{display:block;color:#f0b84f;font-size:11px;margin-bottom:4px;}
+  .scenario-ready{display:grid;gap:14px;}
+  .scenario-baseline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .scenario-stat{border:1px solid var(--border-hairline);background:rgba(255,255,255,.016);border-radius:8px;padding:10px;min-width:0;}
+  .scenario-stat span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:5px;}
+  .scenario-stat strong{display:block;font-size:14px;color:var(--text-primary);overflow-wrap:anywhere;}
+  .scenario-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;border:1px solid rgba(110,99,240,.24);background:rgba(110,99,240,.035);border-radius:9px;padding:12px;}
+  .scenario-form .live-field{min-width:0;}
+  .scenario-result{display:none;gap:12px;border-top:1px solid var(--border-hairline);padding-top:14px;}
+  .scenario-result.visible{display:grid;}
+  .scenario-compare{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;}
+  .scenario-score-card{border:1px solid var(--border-hairline);border-radius:9px;padding:13px;background:rgba(255,255,255,.016);}
+  .scenario-score-card span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:5px;}
+  .scenario-score-card strong{display:block;font-size:24px;color:var(--text-primary);}
+  .scenario-score-card small{display:block;font-size:9px;color:var(--text-secondary);margin-top:4px;}
+  .scenario-score-card.estimate{border-color:rgba(110,99,240,.36);background:rgba(110,99,240,.055);}
+  .scenario-score-card.estimate strong{color:#a79cff;}
+  .scenario-delta-wrap{display:flex;align-items:center;justify-content:center;min-width:80px;}
+  .scenario-delta{font-weight:700;font-size:14px;border-radius:999px;padding:7px 10px;border:1px solid var(--border-hairline);white-space:nowrap;}
+  .scenario-delta.lower{color:var(--evidence);border-color:rgba(47,191,143,.35);}
+  .scenario-delta.higher{color:var(--thermal-hot);border-color:rgba(232,84,58,.35);}
+  .scenario-delta.same{color:var(--text-secondary);}
+  .scenario-change-list{display:grid;gap:6px;}
+  .scenario-change-row{display:flex;justify-content:space-between;gap:14px;border:1px solid var(--border-hairline);border-radius:7px;padding:8px 9px;font-size:9px;color:var(--text-secondary);}
+  .scenario-change-row strong{color:var(--text-primary);text-align:right;}
+  .scenario-interpretation{border-left:2px solid rgba(110,99,240,.6);padding:9px 11px;background:rgba(110,99,240,.025);font-size:10px;color:var(--text-secondary);line-height:1.5;}
+  .scenario-boundary{border:1px solid rgba(240,184,79,.25);background:rgba(240,184,79,.045);border-radius:8px;padding:10px;font-size:9px;line-height:1.5;color:var(--text-secondary);}
+  .scenario-safety-card{padding:18px;align-self:start;display:grid;gap:12px;}
+  .scenario-safety-card h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin:0;}
+  .scenario-class{display:grid;gap:7px;}
+  .scenario-class-row{font-size:9px;line-height:1.45;color:var(--text-secondary);border-bottom:1px solid var(--border-hairline);padding-bottom:8px;}
+  .scenario-class-row strong{display:block;font-size:8px;letter-spacing:.07em;color:var(--accent-light);margin-bottom:3px;}
+
+  @media (max-width:1020px){#liveAnalysisPanel{height:auto;min-height:420px;}#scenarioMain{grid-template-columns:1fr;}}
+  @media (max-width:760px){.live-grid-2,.live-result-grid,.live-priority-highlight,.scenario-baseline-grid,.scenario-compare{grid-template-columns:1fr;}.scenario-form{grid-template-columns:1fr;}.scenario-delta-wrap{min-width:0;justify-content:flex-start;}}
 
 </style>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/></head>
@@ -1264,6 +1315,7 @@
 <button class="nav-link active" data-view="overview"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><rect height="8" rx="1.5" width="8" x="3" y="3"></rect><rect height="8" rx="1.5" width="8" x="13" y="3"></rect><rect height="8" rx="1.5" width="8" x="3" y="13"></rect><rect height="8" rx="1.5" width="8" x="13" y="13"></rect></svg> Overview</button>
 <button class="nav-link" data-view="thermal"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M9 4 L3 6 V20 L9 18 M9 4 L15 6 M9 4 V18 M15 6 L21 4 V18 L15 20 M15 6 V20 M9 18 L15 20"></path></svg> Thermal Map</button>
 <button class="nav-link" data-view="live"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M4 18h16M7 15l3-3 2 2 5-6"></path><circle cx="17" cy="8" r="2"></circle></svg> Live Analysis</button>
+<button class="nav-link" data-view="scenario"><svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M4 18h16M6 15l4-4 3 2 5-6"></path><path d="M16 5h3v3"></path></svg> Scenario Studio</button>
 <button class="nav-link" data-view="hotspots"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M12 2C8 6 6 9.5 6 13a6 6 0 0 0 12 0c0-3.5-2-7-6-11Z"></path></svg> Hotspots</button>
 <button class="nav-link" data-view="evidence"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><circle cx="6" cy="6" r="2.4"></circle><circle cx="18" cy="18" r="2.4"></circle><circle cx="6" cy="18" r="2.4"></circle><path d="M6 8.4 V15.6 M8.4 6 H14 a4 4 0 0 1 4 4 v5.6"></path></svg> Evidence</button>
 <button class="nav-link" data-view="actions"><svg fill="none" height="16" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" width="16"><path d="M5 4h14v13l-4-3H5z"></path><path d="M9 9h6M9 12h4"></path></svg> Next Checks</button>
@@ -1415,11 +1467,11 @@
 <button class="btn-outline-full" id="viewGroundedExplanation">See Full Explanation</button>
 </div>
 <div id="liveAnalysisPanel" aria-label="Fresh FortyGuard thermal analysis">
-  <div class="live-panel-eyebrow">Day 14 · Live Evidence-to-Decision Workspace</div>
+  <div class="live-panel-eyebrow">Day 15 · Live Evidence-to-Scenario Workspace</div>
   <div class="live-panel-title">Run a New Thermal Analysis</div>
   <div class="live-panel-copy">Pan and zoom the map to the area you want to inspect. HeatShield will submit the current map viewport to FortyGuard as a new TCM thermal job.</div>
   <div class="live-api-state"><span class="live-ready-dot"></span><span id="liveApiStatus">Checking FortyGuard configuration…</span></div>
-  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Day 12 adds FortyGuard thermal-stress evidence, Day 13 verifies operational context and calculates transparent priority, and Day 14 lets the grounded assistant answer only from that completed live evidence chain.</div>
+  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Day 12 adds FortyGuard thermal-stress evidence, Day 13 verifies operational context, Day 14 grounds the assistant, and Day 15 compares explicit what-if assumptions without predicting physical cooling.</div>
   <form class="live-form" id="liveAnalysisForm">
     <div class="live-grid-2">
       <div class="live-field"><label for="liveDate">Analysis date (UTC)</label><input id="liveDate" type="date" required></div>
@@ -1510,6 +1562,10 @@
             <div class="live-copilot-copy"><strong>Day 14 · Live Grounded Copilot</strong>Qwen routes intent only. Verified HeatShield evidence and a deterministic evidence renderer produce the factual answer; unsupported medical probabilities, people counts, and invented actions stay blocked.</div>
             <button class="btn-primary" id="liveAskAssistant" type="button">Ask Assistant</button>
           </div>
+          <div class="live-scenario-bridge">
+            <div class="live-scenario-copy"><strong>Day 15 · Scenario Studio</strong>Compare this verified live baseline with explicit operational assumptions. Thermal hazard stays fixed unless new provider evidence is collected; no temperature reduction is invented.</div>
+            <button class="btn-primary" id="liveOpenScenario" type="button">Open Scenario Studio</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1555,6 +1611,54 @@
 <div class="section-subtitle">These checks come from HeatShield’s controlled action catalog and do not claim guaranteed outcomes.</div>
 <div id="allRecommendations" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;"></div>
 </section>
+<section aria-label="HeatShield Scenario Studio" id="scenarioMain">
+<article class="scenario-workspace">
+<div>
+<div class="ph-eyebrow">DAY 15 · CONTROLLED WHAT-IF COMPARISON</div>
+<h2>Live Scenario Studio</h2>
+<p>Start from the completed live evidence packet, change only explicit operational assumptions, and recompute the same transparent planning index. Day 15 v1 holds verified thermal hazard constant and never predicts a site-specific temperature reduction.</p>
+</div>
+<div class="scenario-lock" id="scenarioLocked"><strong>Verified live baseline required</strong>Run Live Analysis, enrich the hottest tile, and verify Day 13 operational context before using Scenario Studio.</div>
+<div class="scenario-ready hidden" id="scenarioReady">
+<div class="scenario-baseline-grid">
+<div class="scenario-stat"><span>Live hotspot</span><strong id="scenarioTile">—</strong></div>
+<div class="scenario-stat"><span>Verified baseline</span><strong id="scenarioBaselineScore">—</strong></div>
+<div class="scenario-stat"><span>Baseline band</span><strong id="scenarioBaselineBand">—</strong></div>
+<div class="scenario-stat"><span>Thermal hazard held constant</span><strong id="scenarioHazard">—</strong></div>
+</div>
+<div class="live-provenance">Authorized context source: <span id="scenarioSource">—</span></div>
+<form class="scenario-form" id="scenarioForm">
+<div class="live-field"><label for="scenarioPreset">Scenario assumption preset</label><select id="scenarioPreset" required><option value="" selected disabled>Select a controlled scenario…</option><option value="strengthen_controls">Assume all protective controls are adequate</option><option value="cooled_recovery">Assume shaded / cooled recovery is adequate</option><option value="work_rest">Assume work-rest controls are adequate</option><option value="lower_exposure">Assume exposure is one level lower</option><option value="lower_exertion">Assume physical exertion is one level lower</option><option value="combined_controls_exposure">Assume stronger controls + one-level lower exposure</option></select></div>
+<button class="btn-primary" id="scenarioRunButton" type="submit">Run Scenario Comparison</button>
+</form>
+<div class="scenario-boundary"><strong>Scenario boundary:</strong> operational factors are hypothetical assumptions. The verified Day 12 thermal hazard is held constant, no future temperature is claimed, and a time-shift scenario requires fresh FortyGuard evidence.</div>
+<div class="live-run-status" id="scenarioStatus"></div>
+<div class="scenario-result" id="scenarioResult">
+<div class="live-classification-row"><span class="class derived">SCENARIO ESTIMATE</span><strong>Before / after transparent planning comparison</strong></div>
+<div class="scenario-compare">
+<div class="scenario-score-card"><span>Verified baseline</span><strong id="scenarioBeforeScore">—</strong><small id="scenarioBeforeBand">—</small></div>
+<div class="scenario-delta-wrap"><div class="scenario-delta same" id="scenarioDelta">—</div></div>
+<div class="scenario-score-card estimate"><span>Scenario estimate</span><strong id="scenarioAfterScore">—</strong><small id="scenarioAfterBand">—</small></div>
+</div>
+<div class="scenario-interpretation" id="scenarioInterpretation">—</div>
+<div class="live-classification-row"><span class="class recommended">ASSUMED</span><strong>Explicit factor changes</strong></div>
+<div class="scenario-change-list" id="scenarioChanges"></div>
+<div class="scenario-boundary" id="scenarioThermalBoundary">Verified thermal hazard is held constant; no temperature reduction is estimated.</div>
+<div class="live-provenance" id="scenarioProvenance"></div>
+</div>
+</div>
+</article>
+<aside class="scenario-safety-card">
+<h3>Evidence &amp; assumption boundary</h3>
+<div class="scenario-class">
+<div class="scenario-class-row"><strong>OBSERVED / VERIFIED</strong>FortyGuard thermal and environmental evidence plus the authorized Day 13 baseline context.</div>
+<div class="scenario-class-row"><strong>ASSUMED</strong>Only the factor changes selected in Scenario Studio.</div>
+<div class="scenario-class-row"><strong>DERIVED</strong>The same transparent Day 13 planning formula recomputed under those assumptions.</div>
+<div class="scenario-class-row"><strong>NOT CLAIMED</strong>No measured future outcome, no guaranteed cooling, no medical-risk probability, and no inferred people count.</div>
+</div>
+<button class="btn-ghost" id="scenarioBackLive" type="button">Back to Live Analysis</button>
+</aside>
+</section>
 <section aria-label="HeatShield Assistant workspace" id="copilotMain">
 <article class="copilot-workspace">
 <div class="copilot-workspace-header">
@@ -1589,5 +1693,5 @@
 </footer></div>
 </div>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=14.0.0"></script></body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=15.0.0"></script></body>
 </html>

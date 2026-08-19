@@ -36,5 +36,5 @@ def test_day14_ui_explains_live_grounding_and_llm_boundary() -> None:
 
 def test_day14_asset_version_and_overflow_polish() -> None:
     html = read("index.html")
-    assert "app.js?v=14.0.0" in html
+    assert "app.js?v=15.0.0" in html
     assert "overflow-x:hidden" in html

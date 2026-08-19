@@ -37,4 +37,4 @@ def test_day11_live_mode_keeps_decision_scope_explicit() -> None:
 
 
 def test_day11_updates_frontend_asset_version() -> None:
-    assert "app.js?v=14.0.0" in read("index.html")
+    assert "app.js?v=15.0.0" in read("index.html")

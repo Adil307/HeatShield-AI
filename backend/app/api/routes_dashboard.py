@@ -14,6 +14,11 @@ from app.services.live_context_priority import (
     LiveContextPriorityError,
     run_live_context_priority,
 )
+from app.services.live_scenario_studio import (
+    Day15ScenarioRequest,
+    LiveScenarioStudioError,
+    run_live_scenario_studio,
+)
 from app.services.live_thermal_analysis import (
     MAX_DEMO_AOI_SQ_MILES,
     LiveThermalAnalysisError,
@@ -154,4 +159,22 @@ async def dashboard_live_copilot(request: Day14LiveCopilotRequest) -> dict:
             catalog_path=CATALOG_PATH,
         )
     except (LiveCopilotError, LiveContextPriorityError, LiveDecisionReadinessError, LiveThermalAnalysisError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+@router.post("/live-analysis/scenario")
+async def dashboard_live_scenario(request: Day15ScenarioRequest) -> dict:
+    try:
+        validate_live_request(request.context_request.analysis_request)
+        return await run_live_scenario_studio(
+            request,
+            live_cache_dir=LIVE_CACHE_DIR,
+            env_cache_dir=LIVE_ENV_CACHE_DIR,
+            catalog_path=CATALOG_PATH,
+        )
+    except (
+        LiveScenarioStudioError,
+        LiveContextPriorityError,
+        LiveDecisionReadinessError,
+        LiveThermalAnalysisError,
+    ) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
