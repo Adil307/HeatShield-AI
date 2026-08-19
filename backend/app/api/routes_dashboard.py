@@ -8,6 +8,11 @@ from app.providers.fortyguard import FortyGuardClient, FortyGuardError
 from app.schemas.fortyguard import HeatmapRequest
 from app.services.dashboard_snapshot import DashboardSnapshotError, build_dashboard_snapshot
 from app.services.live_decision_readiness import LiveDecisionReadinessError, run_live_decision_readiness
+from app.services.live_context_priority import (
+    Day13ContextPriorityRequest,
+    LiveContextPriorityError,
+    run_live_context_priority,
+)
 from app.services.live_thermal_analysis import (
     MAX_DEMO_AOI_SQ_MILES,
     LiveThermalAnalysisError,
@@ -122,3 +127,16 @@ async def dashboard_live_top_hotspot_enrichment(request: HeatmapRequest) -> dict
                 "provider_response": exc.response_body,
             },
         ) from exc
+
+@router.post("/live-analysis/context-priority")
+async def dashboard_live_context_priority(request: Day13ContextPriorityRequest) -> dict:
+    try:
+        validate_live_request(request.analysis_request)
+        return await run_live_context_priority(
+            request,
+            live_cache_dir=LIVE_CACHE_DIR,
+            env_cache_dir=LIVE_ENV_CACHE_DIR,
+            catalog_path=CATALOG_PATH,
+        )
+    except (LiveContextPriorityError, LiveDecisionReadinessError, LiveThermalAnalysisError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

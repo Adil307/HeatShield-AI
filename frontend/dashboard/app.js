@@ -1,4 +1,4 @@
-const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
+const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveContextPriority:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
 const $ = (id) => document.getElementById(id);
 const fmt = (v,d=1) => typeof v === "number" && Number.isFinite(v) ? v.toFixed(d) : "—";
 const metric = (v,s="",d=1) => typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(d)}${s}` : "—";
@@ -44,7 +44,7 @@ const VIEW_COPY = {
     eyebrow:"Fresh FortyGuard Thermal Evidence",
     title:"Live Analysis",
     subtitle:"Submit the current map viewport as a fresh provider-backed TCM analysis",
-    safety:"Fresh mode adds thermal-stress evidence, but no planning priority or medical-risk score is inferred until required context is verified",
+    safety:"In Day 11/12, no planning priority or medical-risk score is inferred until required context is verified. Day 13 calculates a live operational planning priority only after thermal-stress evidence and explicit source-backed context are verified",
     scope:"Fresh provider request · Controlled scope"
   },
   copilot:{
@@ -312,10 +312,64 @@ async function runLiveEnrichment(){
     const payload=await response.json();
     if(!response.ok)throw new Error(formatApiError(payload,response.status));
     state.liveEnrichment=payload;
+    state.liveContextPriority=null;
+    $("liveContextResult")?.classList.remove("visible");
     renderLiveEnrichment(payload);
     if(status){status.className="live-run-status success";status.textContent=payload.provenance?.environmental_cache_hit?"Verified environmental completion reused; no new provider job was created.":"Hottest tile enriched with verified FortyGuard thermal-stress evidence.";}
   }catch(error){if(status){status.className="live-run-status error";status.textContent=`Environmental enrichment failed: ${error.message}`;}}
   finally{if(button){button.disabled=false;button.textContent="Enrich Hottest Tile";}}
+}
+
+function renderLiveContextPriority(payload){
+  const priority=payload?.priority||{},context=payload?.verified_context||{},prov=payload?.provenance||{},actions=payload?.recommendations||[];
+  $("liveContextResult")?.classList.add("visible");
+  if($("liveFinalPriority"))$("liveFinalPriority").textContent=priority.evidence_adjusted_priority_score==null?"WITHHELD":`${fmt(priority.evidence_adjusted_priority_score,1)}/100`;
+  if($("liveFinalBand"))$("liveFinalBand").textContent=priority.evidence_adjusted_priority_band?humanizeToken(priority.evidence_adjusted_priority_band):"WITHHELD";
+  if($("livePriorityAdjustment"))$("livePriorityAdjustment").textContent=priority.operational_adjustment_points==null?"—":`${priority.operational_adjustment_points>=0?"+":""}${fmt(priority.operational_adjustment_points,1)} pts`;
+  const c=priority.contributions||{};
+  if($("livePriorityContributions"))$("livePriorityContributions").innerHTML=[
+    ["Hazard contribution",c.hazard_points],
+    ["Exposure contribution",c.exposure_points],
+    ["Sensitive-use contribution",c.sensitive_use_points],
+    ["Operational vulnerability adjustment",c.vulnerability_adjustment_points],
+    ["Adaptive-capacity reduction",c.adaptive_capacity_reduction_points]
+  ].map(([label,value])=>`<div class="live-contribution-row"><span>${esc(label)}</span><strong>${value==null?"—":`${value>=0?"+":""}${fmt(value,1)} pts`}</strong></div>`).join("");
+  if($("liveControlledActions"))$("liveControlledActions").innerHTML=actions.length?actions.map(action=>`<div class="live-action-row"><strong>${esc(action.title||action.action_id)}</strong><small>${esc(action.recommendation||"")}</small></div>`).join(""):`<div class="live-action-row"><strong>No controlled action triggered</strong><small>${esc(payload?.recommendation_policy?.no_trigger_message||"No catalog action is triggered by the verified evidence.")}</small></div>`;
+  if($("liveContextProvenance"))$("liveContextProvenance").textContent=`Context evidence ${String(context.context_evidence_id||"").slice(0,18)}… · Source ${context.source_ref||"—"} · Model ${priority.model_version||"—"} · Zero provider calls for this context step`;
+  if($("livePriorityReadiness"))$("livePriorityReadiness").textContent=priority.evidence_adjusted_priority_score==null?"WITHHELD":`SUPPORTED · ${fmt(priority.evidence_adjusted_priority_score,1)}/100`;
+}
+
+async function runLiveContextPriority(event){
+  event?.preventDefault?.();
+  const form=$("liveContextForm"),status=$("liveContextStatus"),button=$("liveContextButton");
+  if(!state.liveRequest||!state.liveEnrichment){if(status){status.className="live-run-status error";status.textContent="Enrich the hottest tile first.";}return;}
+  if(form&&!form.reportValidity())return;
+  const contextProfile={
+    profile_type:"operational_worksite_v1",
+    source_type:"authorized_operator_input",
+    source_ref:$("liveContextSourceRef")?.value?.trim()||"",
+    observed_at:new Date().toISOString(),
+    exposure_level:$("liveExposureLevel")?.value||"",
+    sensitive_use_context:$("liveSensitiveUse")?.value||"",
+    physical_exertion:$("livePhysicalExertion")?.value||"",
+    acclimatization_gap:$("liveAcclimatizationGap")?.value||"",
+    heat_trapping_ppe_or_clothing:$("liveHeatPpe")?.value||"",
+    potable_water_access:$("liveWaterAccess")?.value||"",
+    shaded_or_cooled_recovery:$("liveRecovery")?.value||"",
+    work_rest_controls:$("liveWorkRest")?.value||"",
+    heat_training_and_monitoring:$("liveTrainingMonitoring")?.value||""
+  };
+  if(button){button.disabled=true;button.textContent="Calculating verified priority…";}
+  if(status){status.className="live-run-status";status.textContent="Reusing verified FortyGuard evidence and applying the transparent priority model to the authorized context…";}
+  try{
+    const response=await fetch("/api/v1/dashboard/live-analysis/context-priority",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({analysis_request:state.liveRequest,context_profile:contextProfile})});
+    const payload=await response.json();
+    if(!response.ok)throw new Error(formatApiError(payload,response.status));
+    state.liveContextPriority=payload;
+    renderLiveContextPriority(payload);
+    if(status){status.className="live-run-status success";status.textContent="Authorized context verified. Evidence-adjusted live planning priority is now supported.";}
+  }catch(error){if(status){status.className="live-run-status error";status.textContent=`Context verification failed: ${error.message}`;}}
+  finally{if(button){button.disabled=false;button.textContent="Verify Context & Calculate Priority";}}
 }
 
 async function runLiveAnalysis(){
@@ -334,7 +388,10 @@ async function runLiveAnalysis(){
     state.liveAnalysis=payload;
     state.liveRequest=request;
     state.liveEnrichment=null;
+    state.liveContextPriority=null;
     $("liveDecisionResult")?.classList.remove("visible");
+    $("liveContextResult")?.classList.remove("visible");
+    $("liveContextForm")?.reset();
     if($("liveEnrichButton"))$("liveEnrichButton").disabled=false;
     renderLiveResult(payload);
     renderMap();
@@ -347,8 +404,11 @@ function resetLiveAnalysis(){
   state.liveAnalysis=null;
   state.liveRequest=null;
   state.liveEnrichment=null;
+  state.liveContextPriority=null;
   $("liveResult")?.classList.remove("visible");
   $("liveDecisionResult")?.classList.remove("visible");
+  $("liveContextResult")?.classList.remove("visible");
+  $("liveContextForm")?.reset();
   if($("liveEnrichButton"))$("liveEnrichButton").disabled=true;
   if($("liveRunStatus")){ $("liveRunStatus").className="live-run-status";$("liveRunStatus").textContent="Historical replay restored."; }
   activateView("thermal");
@@ -386,6 +446,7 @@ $("satelliteBasemapButton")?.addEventListener("click",()=>setBasemap("satellite"
 $("streetBasemapButton")?.addEventListener("click",()=>setBasemap("streets"));
 $("liveAnalysisForm")?.addEventListener("submit",event=>{event.preventDefault();runLiveAnalysis();});
 $("liveEnrichButton")?.addEventListener("click",runLiveEnrichment);
+$("liveContextForm")?.addEventListener("submit",runLiveContextPriority);
 $("liveResetButton")?.addEventListener("click",resetLiveAnalysis);
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(VIEW_COPY[view])activateView(view,{updateHash:false});});
 init();

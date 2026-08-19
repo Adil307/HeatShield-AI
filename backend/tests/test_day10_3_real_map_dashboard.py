@@ -14,7 +14,7 @@ def test_current_dashboard_uses_real_map_stack():
     assert "L.heatLayer" in js
 
 def test_current_dashboard_uses_current_versioned_app_asset():
-    assert "app.js?v=12.0.0" in read("index.html")
+    assert "app.js?v=13.0.0" in read("index.html")
 
 def test_current_dashboard_keeps_real_evidence_scope():
     text=read("index.html").lower()

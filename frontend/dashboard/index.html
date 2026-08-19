@@ -1209,8 +1209,28 @@
   .live-withheld strong{color:#f0b84f;margin-bottom:4px;}.live-withheld small{display:block;font-size:8.5px;color:var(--text-muted);line-height:1.45;}
   .live-next-checks{display:grid;gap:6px;}.live-check-row{display:flex;gap:8px;border:1px solid var(--border-hairline);border-radius:7px;padding:8px;}
   .live-check-tag{font-size:7px;letter-spacing:.07em;color:#f0b84f;white-space:nowrap;margin-top:2px;}.live-check-row strong,.live-check-row small{display:block;}.live-check-row strong{font-size:9.5px;color:var(--text-primary);}.live-check-row small{font-size:8.5px;color:var(--text-muted);line-height:1.4;margin-top:2px;}
+
+  /* Day 13 — controlled operational context verification */
+  .live-context-bridge{display:grid;gap:10px;border-top:1px solid var(--border-hairline);padding-top:12px;margin-top:2px;}
+  .live-context-form{display:grid;gap:9px;border:1px solid rgba(47,191,143,.22);border-radius:9px;background:rgba(47,191,143,.035);padding:11px;}
+  .live-context-section{font-size:8px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-top:2px;}
+  .live-context-note{font-size:8.5px;line-height:1.45;color:var(--text-muted);border-left:2px solid rgba(47,191,143,.55);padding-left:8px;}
+  .live-context-result{display:none;gap:9px;border:1px solid rgba(47,191,143,.24);border-radius:9px;background:rgba(47,191,143,.035);padding:11px;}
+  .live-context-result.visible{display:grid;}
+  .live-priority-highlight{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:8px;}
+  .live-priority-highlight>div{border:1px solid var(--border-hairline);border-radius:8px;padding:10px;background:rgba(255,255,255,.016);}
+  .live-priority-highlight span{display:block;font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+  .live-priority-highlight strong{display:block;font-size:15px;color:var(--text-primary);}
+  .live-priority-highlight .primary strong{font-size:22px;color:var(--evidence);}
+  .live-contribution-list,.live-action-list{display:grid;gap:6px;}
+  .live-contribution-row,.live-action-row{border:1px solid var(--border-hairline);border-radius:7px;padding:8px 9px;font-size:9px;}
+  .live-contribution-row{display:flex;justify-content:space-between;gap:12px;color:var(--text-secondary);}
+  .live-contribution-row strong{color:var(--text-primary);}
+  .live-action-row strong,.live-action-row small{display:block;}.live-action-row strong{color:var(--text-primary);font-size:9.5px;}.live-action-row small{color:var(--text-muted);font-size:8.5px;line-height:1.45;margin-top:3px;}
+  .live-context-source{font-size:8.5px;color:var(--text-muted);line-height:1.45;}
+
   @media (max-width:1020px){#liveAnalysisPanel{height:auto;min-height:420px;}}
-  @media (max-width:760px){.live-grid-2,.live-result-grid{grid-template-columns:1fr;}}
+  @media (max-width:760px){.live-grid-2,.live-result-grid,.live-priority-highlight{grid-template-columns:1fr;}}
 
 </style>
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/></head>
@@ -1387,11 +1407,11 @@
 <button class="btn-outline-full" id="viewGroundedExplanation">See Full Explanation</button>
 </div>
 <div id="liveAnalysisPanel" aria-label="Fresh FortyGuard thermal analysis">
-  <div class="live-panel-eyebrow">Day 12 · Live Decision Readiness</div>
+  <div class="live-panel-eyebrow">Day 13 · Live Operational Priority</div>
   <div class="live-panel-title">Run a New Thermal Analysis</div>
   <div class="live-panel-copy">Pan and zoom the map to the area you want to inspect. HeatShield will submit the current map viewport to FortyGuard as a new TCM thermal job.</div>
   <div class="live-api-state"><span class="live-ready-dot"></span><span id="liveApiStatus">Checking FortyGuard configuration…</span></div>
-  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Day 12 can explicitly enrich the hottest tile with FortyGuard thermal-stress parameters, while planning priority remains withheld until exposure, vulnerability, and protection context are verified.</div>
+  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Day 12 enriches the hottest tile with FortyGuard thermal-stress parameters; Day 13 unlocks a transparent operational planning priority only after source-backed context is explicitly verified.</div>
   <form class="live-form" id="liveAnalysisForm">
     <div class="live-grid-2">
       <div class="live-field"><label for="liveDate">Analysis date (UTC)</label><input id="liveDate" type="date" required></div>
@@ -1414,9 +1434,9 @@
     <div class="live-provenance" id="liveProvenance"></div>
     <div class="live-decision-bridge">
       <div>
-        <div class="live-panel-eyebrow">Day 12 · Decision readiness</div>
+        <div class="live-panel-eyebrow">Day 12 · Live Decision Readiness</div>
         <div class="live-decision-title">Add thermal-stress evidence to the hottest tile</div>
-        <div class="live-decision-copy">This controlled step reuses the completed thermal job and may create one FortyGuard Environmental Parameters job. It does not create occupancy, vulnerability, or a medical-risk probability.</div>
+        <div class="live-decision-copy">This controlled step reuses the completed thermal job and may create one FortyGuard Environmental Parameters job. At Day 12, planning priority remains withheld until exposure, vulnerability, and protection context are verified; it does not create occupancy or a medical-risk probability.</div>
       </div>
       <button class="btn-primary" id="liveEnrichButton" type="button" disabled>Enrich Hottest Tile</button>
     </div>
@@ -1435,6 +1455,51 @@
       <div class="live-classification-row"><span class="class recommended">RECOMMENDED</span><strong>Evidence checks before full priority</strong></div>
       <div class="live-next-checks" id="liveNextChecks"></div>
       <div class="live-provenance" id="liveDecisionProvenance"></div>
+      <div class="live-context-bridge" id="liveContextBridge">
+        <div>
+          <div class="live-panel-eyebrow">Day 13 · Controlled Context Verification</div>
+          <div class="live-decision-title">Verify operational context and calculate full live priority</div>
+          <div class="live-decision-copy">Every field below is explicit operator evidence. HeatShield does not infer occupancy, work conditions, vulnerability, or protection controls from the map or an LLM.</div>
+        </div>
+        <form class="live-context-form" id="liveContextForm">
+          <div class="live-field"><label for="liveContextSourceRef">Evidence source reference</label><input id="liveContextSourceRef" type="text" minlength="3" maxlength="240" placeholder="e.g. Site supervisor briefing / operations record" required></div>
+          <div class="live-context-source">Source type: <strong>Authorized operator input</strong> · Timestamp is recorded automatically. Do not enter personal medical information.</div>
+          <div class="live-context-section">Exposure context</div>
+          <div class="live-grid-2">
+            <div class="live-field"><label for="liveExposureLevel">Meaningful exposure level</label><select id="liveExposureLevel" required><option value="" selected disabled>Select…</option><option value="none">None verified</option><option value="low">Low</option><option value="moderate">Moderate</option><option value="high">High</option></select></div>
+            <div class="live-field"><label for="liveSensitiveUse">Sensitive-use context</label><select id="liveSensitiveUse" required><option value="" selected disabled>Select…</option><option value="none">None verified</option><option value="education">Education use</option><option value="healthcare">Healthcare use</option><option value="education_and_healthcare">Education + healthcare</option></select></div>
+          </div>
+          <div class="live-context-section">Operational vulnerability</div>
+          <div class="live-grid-2">
+            <div class="live-field"><label for="livePhysicalExertion">Physical exertion</label><select id="livePhysicalExertion" required><option value="" selected disabled>Select…</option><option value="low">Low</option><option value="moderate">Moderate</option><option value="high">High</option></select></div>
+            <div class="live-field"><label for="liveAcclimatizationGap">Acclimatization gap</label><select id="liveAcclimatizationGap" required><option value="" selected disabled>Select…</option><option value="none">None</option><option value="partial">Partial</option><option value="substantial">Substantial</option></select></div>
+          </div>
+          <div class="live-field"><label for="liveHeatPpe">Heat-trapping PPE or clothing</label><select id="liveHeatPpe" required><option value="" selected disabled>Select…</option><option value="none">None</option><option value="some">Some</option><option value="substantial">Substantial</option></select></div>
+          <div class="live-context-section">Protection and adaptive capacity</div>
+          <div class="live-grid-2">
+            <div class="live-field"><label for="liveWaterAccess">Potable water access</label><select id="liveWaterAccess" required><option value="" selected disabled>Select…</option><option value="absent">Absent</option><option value="partial">Partial</option><option value="adequate">Adequate</option></select></div>
+            <div class="live-field"><label for="liveRecovery">Shaded / cooled recovery</label><select id="liveRecovery" required><option value="" selected disabled>Select…</option><option value="absent">Absent</option><option value="partial">Partial</option><option value="adequate">Adequate</option></select></div>
+            <div class="live-field"><label for="liveWorkRest">Work-rest controls</label><select id="liveWorkRest" required><option value="" selected disabled>Select…</option><option value="absent">Absent</option><option value="partial">Partial</option><option value="adequate">Adequate</option></select></div>
+            <div class="live-field"><label for="liveTrainingMonitoring">Heat training and monitoring</label><select id="liveTrainingMonitoring" required><option value="" selected disabled>Select…</option><option value="absent">Absent</option><option value="partial">Partial</option><option value="adequate">Adequate</option></select></div>
+          </div>
+          <div class="live-context-note">These are operational planning factors, not individual health attributes. The score remains a transparent planning index, not a medical-risk probability.</div>
+          <button class="btn-primary" id="liveContextButton" type="submit">Verify Context &amp; Calculate Priority</button>
+        </form>
+        <div class="live-run-status" id="liveContextStatus"></div>
+        <div class="live-context-result" id="liveContextResult">
+          <div class="live-classification-row"><span class="class observed">OBSERVED</span><strong>Authorized operational context verified</strong></div>
+          <div class="live-priority-highlight">
+            <div class="primary"><span>Evidence-adjusted priority</span><strong id="liveFinalPriority">—</strong></div>
+            <div><span>Priority band</span><strong id="liveFinalBand">—</strong></div>
+            <div><span>Operational adjustment</span><strong id="livePriorityAdjustment">—</strong></div>
+          </div>
+          <div class="live-classification-row"><span class="class derived">DERIVED</span><strong>Transparent score composition</strong></div>
+          <div class="live-contribution-list" id="livePriorityContributions"></div>
+          <div class="live-classification-row"><span class="class recommended">RECOMMENDED</span><strong>Controlled action catalog</strong></div>
+          <div class="live-action-list" id="liveControlledActions"></div>
+          <div class="live-provenance" id="liveContextProvenance"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1512,5 +1577,5 @@
 </footer></div>
 </div>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=12.0.0"></script></body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=13.0.0"></script></body>
 </html>
