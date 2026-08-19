@@ -50,4 +50,4 @@ def test_day13_backend_route_exists_and_asset_version_is_bumped() -> None:
     routes = ROUTES.read_text(encoding="utf-8")
     assert '@router.post("/live-analysis/context-priority")' in routes
     assert "run_live_context_priority" in routes
-    assert "app.js?v=13.0.0" in read("index.html")
+    assert "app.js?v=14.0.0" in read("index.html")

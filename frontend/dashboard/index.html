@@ -1155,7 +1155,7 @@
 
 
   /* Day 11 — controlled fresh FortyGuard thermal analysis */
-  #liveAnalysisPanel{display:none;flex-direction:column;gap:14px;height:560px;background:var(--bg-card);border:1px solid var(--border-hairline);border-radius:10px;padding:18px;overflow:auto;}
+  #liveAnalysisPanel{display:none;flex-direction:column;gap:14px;height:560px;background:var(--bg-card);border:1px solid var(--border-hairline);border-radius:10px;padding:18px;overflow-y:auto;overflow-x:hidden;min-width:0;}
   .content[data-view="live"] .kpi-row,
   .content[data-view="live"] #analyticsSection,
   .content[data-view="live"] #evidenceGroup,
@@ -1228,6 +1228,14 @@
   .live-contribution-row strong{color:var(--text-primary);}
   .live-action-row strong,.live-action-row small{display:block;}.live-action-row strong{color:var(--text-primary);font-size:9.5px;}.live-action-row small{color:var(--text-muted);font-size:8.5px;line-height:1.45;margin-top:3px;}
   .live-context-source{font-size:8.5px;color:var(--text-muted);line-height:1.45;}
+  .live-context-result,.live-context-form,.live-contribution-row,.live-action-row{min-width:0;}
+  .live-contribution-row span,.live-action-row small{min-width:0;overflow-wrap:anywhere;}
+
+  /* Day 14 — grounded live copilot */
+  .live-copilot-bridge{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border-top:1px solid var(--border-hairline);padding-top:11px;margin-top:2px;}
+  .live-copilot-copy{font-size:8.7px;line-height:1.48;color:var(--text-muted);max-width:430px;}
+  .live-copilot-copy strong{display:block;color:var(--text-primary);font-size:10px;margin-bottom:3px;}
+  .copilot-grounding-meta{display:block;margin-top:8px;padding-top:7px;border-top:1px solid var(--border-hairline);color:var(--evidence)!important;font-size:8px!important;line-height:1.4;}
 
   @media (max-width:1020px){#liveAnalysisPanel{height:auto;min-height:420px;}}
   @media (max-width:760px){.live-grid-2,.live-result-grid,.live-priority-highlight{grid-template-columns:1fr;}}
@@ -1407,11 +1415,11 @@
 <button class="btn-outline-full" id="viewGroundedExplanation">See Full Explanation</button>
 </div>
 <div id="liveAnalysisPanel" aria-label="Fresh FortyGuard thermal analysis">
-  <div class="live-panel-eyebrow">Day 13 · Live Operational Priority</div>
+  <div class="live-panel-eyebrow">Day 14 · Live Evidence-to-Decision Workspace</div>
   <div class="live-panel-title">Run a New Thermal Analysis</div>
   <div class="live-panel-copy">Pan and zoom the map to the area you want to inspect. HeatShield will submit the current map viewport to FortyGuard as a new TCM thermal job.</div>
   <div class="live-api-state"><span class="live-ready-dot"></span><span id="liveApiStatus">Checking FortyGuard configuration…</span></div>
-  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Day 12 enriches the hottest tile with FortyGuard thermal-stress parameters; Day 13 unlocks a transparent operational planning priority only after source-backed context is explicitly verified.</div>
+  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Day 12 adds FortyGuard thermal-stress evidence, Day 13 verifies operational context and calculates transparent priority, and Day 14 lets the grounded assistant answer only from that completed live evidence chain.</div>
   <form class="live-form" id="liveAnalysisForm">
     <div class="live-grid-2">
       <div class="live-field"><label for="liveDate">Analysis date (UTC)</label><input id="liveDate" type="date" required></div>
@@ -1498,6 +1506,10 @@
           <div class="live-classification-row"><span class="class recommended">RECOMMENDED</span><strong>Controlled action catalog</strong></div>
           <div class="live-action-list" id="liveControlledActions"></div>
           <div class="live-provenance" id="liveContextProvenance"></div>
+          <div class="live-copilot-bridge">
+            <div class="live-copilot-copy"><strong>Day 14 · Live Grounded Copilot</strong>Qwen routes intent only. Verified HeatShield evidence and a deterministic evidence renderer produce the factual answer; unsupported medical probabilities, people counts, and invented actions stay blocked.</div>
+            <button class="btn-primary" id="liveAskAssistant" type="button">Ask Assistant</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1548,7 +1560,7 @@
 <div class="copilot-workspace-header">
 <div>
 <h2>HeatShield Assistant</h2>
-<p>Ask about the selected hotspot, verified measurements, comparisons, missing evidence, or recommended next checks. Answers are written from HeatShield’s verified evidence.</p>
+<p>Ask about the selected historical hotspot or the completed fresh live analysis. In live mode, Qwen routes intent only; factual values are rendered deterministically from verified FortyGuard evidence and authorized context.</p>
 </div>
 <div class="copilot-model-status"><span class="dot evidence"></span><span id="copilotStatus">Checking local assistant…</span><span class="model-tag" id="copilotModel">Checking model…</span></div>
 </div>
@@ -1559,7 +1571,7 @@
 <button class="qp-btn" data-intent="missing">What evidence is still missing?</button>
 </div>
 <div class="copilot-thread" id="thread">
-<div class="msg assistant">Choose a question above or ask in your own words. HeatShield will use the evidence currently selected.</div>
+<div class="msg assistant">Choose a question above or ask in your own words. After Day 13 context verification, the same assistant automatically switches to the fresh live evidence packet.</div>
 </div>
 <form class="copilot-main-form" id="copilotForm">
 <input id="copilotInput" maxlength="2000" placeholder="Ask about the selected evidence…"/>
@@ -1569,7 +1581,7 @@
 <aside class="copilot-context-card">
 <h3>Evidence in This Question</h3>
 <div id="copilotContext"></div>
-<div class="context-safety">HeatShield keeps unknown evidence explicit and does not turn planning priority into a medical-risk probability.</div>
+<div class="context-safety">HeatShield keeps unknown evidence explicit, never turns planning priority into a medical-risk probability, and never treats mapped objects as people or occupancy.</div>
 </aside>
 </section><footer style="display:flex;justify-content:space-between;border-top:1px solid var(--border-hairline);padding-top:16px;color:var(--text-muted);font-size:9.5px;">
 <span>FortyGuard thermal evidence · HeatShield priority engine · Local evidence-grounded assistant</span>
@@ -1577,5 +1589,5 @@
 </footer></div>
 </div>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=13.0.0"></script></body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=14.0.0"></script></body>
 </html>

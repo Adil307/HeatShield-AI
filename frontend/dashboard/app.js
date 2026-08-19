@@ -1,4 +1,4 @@
-const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveContextPriority:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
+const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveContextPriority:null, liveContextRequest:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
 const $ = (id) => document.getElementById(id);
 const fmt = (v,d=1) => typeof v === "number" && Number.isFinite(v) ? v.toFixed(d) : "—";
 const metric = (v,s="",d=1) => typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(d)}${s}` : "—";
@@ -44,15 +44,15 @@ const VIEW_COPY = {
     eyebrow:"Fresh FortyGuard Thermal Evidence",
     title:"Live Analysis",
     subtitle:"Submit the current map viewport as a fresh provider-backed TCM analysis",
-    safety:"In Day 11/12, no planning priority or medical-risk score is inferred until required context is verified. Day 13 calculates a live operational planning priority only after thermal-stress evidence and explicit source-backed context are verified",
+    safety:"In Day 11/12, no planning priority or medical-risk score is inferred until required context is verified. Day 13/14 then use source-backed context for transparent priority and grounded answers; no medical-risk probability is inferred",
     scope:"Fresh provider request · Controlled scope"
   },
   copilot:{
     eyebrow:"Evidence-Grounded Assistant",
     title:"HeatShield Assistant",
-    subtitle:"Ask a plain-language question about the evidence already on screen",
-    safety:"Answers are based on verified HeatShield evidence; missing evidence is kept explicit",
-    scope:"Local assistant · Evidence grounded"
+    subtitle:"Ask a plain-language question about the historical replay or the completed fresh live analysis",
+    safety:"Qwen may route intent, but verified tools and deterministic rendering remain the source of factual claims",
+    scope:"Grounded assistant · Historical + live"
   }
 };
 
@@ -64,7 +64,9 @@ function featureCenter(feature){const layer=L.geoJSON(feature);const bounds=laye
 function syncScenarioBar(){
   const label=$("scenarioLabel");
   if(!label)return;
-  label.textContent=state.activeView==="live"?"Fresh FortyGuard Thermal Analysis":state.replayScenarioLabel;
+  if(state.activeView==="live") label.textContent="Fresh FortyGuard Thermal Analysis";
+  else if(state.activeView==="copilot"&&state.liveContextPriority&&state.liveContextRequest) label.textContent="Fresh Live Analysis · Grounded Copilot";
+  else label.textContent=state.replayScenarioLabel;
 }
 
 function activateView(view,{updateHash=true}={}){
@@ -227,7 +229,17 @@ function renderRecommendations(h){
     </article>`;
   }).join("");
 }
-function renderCopilotContext(h){if(!h||!$("copilotContext"))return;const s=h.evidence_status;$("copilotContext").innerHTML=[["Selected hotspot",`Hotspot ${h.hotspot_rank}`],["Planning priority",`${fmt(h.planning_priority,2)}/100`],["Tile",String(h.tile_id??"—")],["Operational vulnerability",humanStatus(s.verified_operational_vulnerability,"unknown")],["Adaptive capacity",humanStatus(s.verified_adaptive_capacity,"unknown")],["Medical risk probability",humanStatus(s.medical_risk_probability,"withheld")]].map(([a,b])=>`<div class="context-line"><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join("");}
+function renderCopilotContext(h){
+  if(!$("copilotContext"))return;
+  if(state.liveContextPriority&&state.liveContextRequest){
+    const p=state.liveContextPriority.priority||{},c=state.liveContextPriority.verified_context||{},sel=state.liveContextPriority.selected_hotspot||{};
+    $("copilotContext").innerHTML=[["Evidence mode","Fresh live analysis"],["Hottest tile",`Tile ${sel.tile_id??"—"}`],["Evidence-adjusted priority",p.evidence_adjusted_priority_score==null?"Withheld":`${fmt(p.evidence_adjusted_priority_score,2)}/100`],["Priority band",humanizeToken(p.evidence_adjusted_priority_band||"—")],["Context source",c.source_ref||"—"],["Medical risk probability","Not supported"]].map(([a,b])=>`<div class="context-line"><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join("");
+    return;
+  }
+  if(!h)return;
+  const status=h.evidence_status;
+  $("copilotContext").innerHTML=[["Evidence mode","Historical replay"],["Selected hotspot",`Hotspot ${h.hotspot_rank}`],["Planning priority",`${fmt(h.planning_priority,2)}/100`],["Tile",String(h.tile_id??"—")],["Operational vulnerability",humanStatus(status.verified_operational_vulnerability,"unknown")],["Adaptive capacity",humanStatus(status.verified_adaptive_capacity,"unknown")],["Medical risk probability",humanStatus(status.medical_risk_probability,"withheld")]].map(([a,b])=>`<div class="context-line"><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join("");
+}
 
 function setDefaultLiveDateTime(){
   const now=new Date();
@@ -313,7 +325,9 @@ async function runLiveEnrichment(){
     if(!response.ok)throw new Error(formatApiError(payload,response.status));
     state.liveEnrichment=payload;
     state.liveContextPriority=null;
+    state.liveContextRequest=null;
     $("liveContextResult")?.classList.remove("visible");
+    renderCopilotContext(selectedHotspot());
     renderLiveEnrichment(payload);
     if(status){status.className="live-run-status success";status.textContent=payload.provenance?.environmental_cache_hit?"Verified environmental completion reused; no new provider job was created.":"Hottest tile enriched with verified FortyGuard thermal-stress evidence.";}
   }catch(error){if(status){status.className="live-run-status error";status.textContent=`Environmental enrichment failed: ${error.message}`;}}
@@ -366,8 +380,11 @@ async function runLiveContextPriority(event){
     const payload=await response.json();
     if(!response.ok)throw new Error(formatApiError(payload,response.status));
     state.liveContextPriority=payload;
+    state.liveContextRequest={analysis_request:state.liveRequest,context_profile:contextProfile};
     renderLiveContextPriority(payload);
-    if(status){status.className="live-run-status success";status.textContent="Authorized context verified. Evidence-adjusted live planning priority is now supported.";}
+    renderCopilotContext(selectedHotspot());
+    syncScenarioBar();
+    if(status){status.className="live-run-status success";status.textContent="Authorized context verified. Evidence-adjusted live planning priority is now supported, and the Day 14 live copilot is unlocked.";}
   }catch(error){if(status){status.className="live-run-status error";status.textContent=`Context verification failed: ${error.message}`;}}
   finally{if(button){button.disabled=false;button.textContent="Verify Context & Calculate Priority";}}
 }
@@ -389,7 +406,9 @@ async function runLiveAnalysis(){
     state.liveRequest=request;
     state.liveEnrichment=null;
     state.liveContextPriority=null;
+    state.liveContextRequest=null;
     $("liveDecisionResult")?.classList.remove("visible");
+    renderCopilotContext(selectedHotspot());
     $("liveContextResult")?.classList.remove("visible");
     $("liveContextForm")?.reset();
     if($("liveEnrichButton"))$("liveEnrichButton").disabled=false;
@@ -405,18 +424,40 @@ function resetLiveAnalysis(){
   state.liveRequest=null;
   state.liveEnrichment=null;
   state.liveContextPriority=null;
+  state.liveContextRequest=null;
   $("liveResult")?.classList.remove("visible");
   $("liveDecisionResult")?.classList.remove("visible");
   $("liveContextResult")?.classList.remove("visible");
   $("liveContextForm")?.reset();
   if($("liveEnrichButton"))$("liveEnrichButton").disabled=true;
   if($("liveRunStatus")){ $("liveRunStatus").className="live-run-status";$("liveRunStatus").textContent="Historical replay restored."; }
+  renderCopilotContext(selectedHotspot());
   activateView("thermal");
 }
 
 function selectHotspot(rank){state.selectedRank=rank;renderSelected();if(state.activeView==="thermal")renderMap();}
-function addMessage(role,text){const thread=$("thread"),msg=document.createElement("div");msg.className=`msg ${role}`;msg.textContent=text;thread.appendChild(msg);thread.scrollTop=thread.scrollHeight;}
-async function askCopilot(query){if(!query)return;activateView("copilot");addMessage("user",query);$("sendButton").disabled=true;$("sendButton").textContent="Checking evidence…";try{const response=await fetch("/api/v1/copilot/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query,mode:"auto",hotspot_rank:state.selectedRank})});const payload=await response.json();if(!response.ok)throw new Error(payload.detail||`HTTP ${response.status}`);addMessage("assistant",payload.answer||"No grounded answer was returned.");}catch(error){addMessage("assistant",`The assistant is unavailable right now: ${error.message}. The verified dashboard evidence is still available.`);}finally{$("sendButton").disabled=false;$("sendButton").textContent="Send";}}
+function addMessage(role,text,meta=""){const thread=$("thread"),msg=document.createElement("div");msg.className=`msg ${role}`;const body=document.createElement("div");body.textContent=text;msg.appendChild(body);if(meta&&role==="assistant"){const small=document.createElement("small");small.className="copilot-grounding-meta";small.textContent=meta;msg.appendChild(small);}thread.appendChild(msg);thread.scrollTop=thread.scrollHeight;}
+async function askCopilot(query){
+  if(!query)return;
+  const useLive=Boolean(state.liveContextPriority&&state.liveContextRequest);
+  activateView("copilot");
+  renderCopilotContext(selectedHotspot());
+  addMessage("user",query);
+  $("sendButton").disabled=true;$("sendButton").textContent="Checking evidence…";
+  try{
+    let response;
+    if(useLive){
+      response=await fetch("/api/v1/dashboard/live-analysis/copilot",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query,mode:"auto",context_request:state.liveContextRequest})});
+    }else{
+      response=await fetch("/api/v1/copilot/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query,mode:"auto",hotspot_rank:state.selectedRank})});
+    }
+    const payload=await response.json();
+    if(!response.ok)throw new Error(formatApiError(payload,response.status));
+    const liveMeta=useLive?`${payload.runtime?.planner||"live grounded router"} · ${payload.grounding?.guard_status||"evidence guard"} · ${(payload.evidence_refs||[]).length} evidence refs`:"Historical evidence guard";
+    addMessage("assistant",payload.answer||"No grounded answer was returned.",liveMeta);
+  }catch(error){addMessage("assistant",`The assistant is unavailable right now: ${error.message}. The verified dashboard evidence is still available.`);}
+  finally{$("sendButton").disabled=false;$("sendButton").textContent="Send";}
+}
 async function loadCopilotStatus(){try{const response=await fetch("/api/v1/copilot/status"),payload=await response.json();$("copilotStatus").textContent=payload.status==="ready"?"Local assistant ready":"Assistant available";$("copilotModel").textContent=payload.model||payload.configured_model||"Configured model";}catch{$("copilotStatus").textContent="Assistant status unavailable";$("copilotModel").textContent="—";}}
 async function init(){try{const response=await fetch("/api/v1/dashboard/overview"),payload=await response.json();if(!response.ok)throw new Error(payload.detail||`HTTP ${response.status}`);state.snapshot=payload;
     state.selectedRank=payload.planning_order?.[0]??payload.hotspots?.[0]?.hotspot_rank??null;
@@ -433,7 +474,14 @@ $("openCopilotTop")?.addEventListener("click",()=>activateView("copilot"));
 $("viewGroundedExplanation")?.addEventListener("click",()=>askCopilot(`Why is hotspot ${state.selectedRank} high priority?`));
 $("viewAllRecommendations")?.addEventListener("click",()=>activateView("actions"));
 function queryForIntent(intent){
-  const rank=state.selectedRank;
+  const live=Boolean(state.liveContextPriority&&state.liveContextRequest),rank=state.selectedRank;
+  if(live){
+    if(intent==="why") return "Why does the current live planning priority have this value?";
+    if(intent==="compare") return "What can be safely compared across the live hottest tiles?";
+    if(intent==="actions") return "What controlled action is supported by the current live evidence?";
+    if(intent==="missing") return "What is verified and what remains unsupported in this live analysis?";
+    return "Summarize the current verified live analysis.";
+  }
   if(intent==="why") return rank?`Why does hotspot ${rank} rank this high?`:"Why does the selected hotspot rank this high?";
   if(intent==="compare") return "Compare the verified hotspots and explain the planning order.";
   if(intent==="actions") return rank?`What should we verify or assess next for hotspot ${rank}?`:"What should we verify or assess next?";
@@ -447,6 +495,7 @@ $("streetBasemapButton")?.addEventListener("click",()=>setBasemap("streets"));
 $("liveAnalysisForm")?.addEventListener("submit",event=>{event.preventDefault();runLiveAnalysis();});
 $("liveEnrichButton")?.addEventListener("click",runLiveEnrichment);
 $("liveContextForm")?.addEventListener("submit",runLiveContextPriority);
+$("liveAskAssistant")?.addEventListener("click",()=>{renderCopilotContext(selectedHotspot());activateView("copilot");});
 $("liveResetButton")?.addEventListener("click",resetLiveAnalysis);
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(VIEW_COPY[view])activateView(view,{updateHash:false});});
 init();

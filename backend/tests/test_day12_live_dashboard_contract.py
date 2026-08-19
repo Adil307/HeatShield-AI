@@ -36,4 +36,4 @@ def test_day12_keeps_missing_context_and_medical_boundary_visible() -> None:
 
 
 def test_day12_updates_frontend_asset_version() -> None:
-    assert "app.js?v=13.0.0" in read("index.html")
+    assert "app.js?v=14.0.0" in read("index.html")

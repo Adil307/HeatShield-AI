@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
+from app.ai.live_copilot import Day14LiveCopilotRequest, LiveCopilotError, answer_live_copilot
 from app.core.config import get_settings
 from app.core.paths import backend_path
 from app.providers.fortyguard import FortyGuardClient, FortyGuardError
@@ -139,4 +140,18 @@ async def dashboard_live_context_priority(request: Day13ContextPriorityRequest) 
             catalog_path=CATALOG_PATH,
         )
     except (LiveContextPriorityError, LiveDecisionReadinessError, LiveThermalAnalysisError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+@router.post("/live-analysis/copilot")
+async def dashboard_live_copilot(request: Day14LiveCopilotRequest) -> dict:
+    try:
+        validate_live_request(request.context_request.analysis_request)
+        return await answer_live_copilot(
+            request,
+            settings=get_settings(),
+            live_cache_dir=LIVE_CACHE_DIR,
+            env_cache_dir=LIVE_ENV_CACHE_DIR,
+            catalog_path=CATALOG_PATH,
+        )
+    except (LiveCopilotError, LiveContextPriorityError, LiveDecisionReadinessError, LiveThermalAnalysisError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
