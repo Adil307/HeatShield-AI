@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 
@@ -13,16 +14,18 @@ def test_professional_dashboard_files_exist() -> None:
     assert (FRONTEND / "app.js").exists()
 
 
-def test_dashboard_has_operations_information_architecture() -> None:
+def test_dashboard_has_professional_decision_information_architecture() -> None:
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+
+    # Test stable UX capabilities, not old Day-10.1 implementation IDs.
     required = [
         "sidebar",
         "kpiHotspots",
         "heatmapSvg",
-        "rankingList",
-        "detailTitle",
-        "metricGrid",
-        "actionList",
+        "Selected Hotspot",
+        "Priority Composition",
+        "Hotspot Comparison",
+        "Recommendations",
         "copilotDrawer",
         "copilotForm",
     ]
@@ -33,14 +36,16 @@ def test_dashboard_has_operations_information_architecture() -> None:
 def test_copilot_is_drawer_not_full_page_block() -> None:
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     css = (FRONTEND / "styles.css").read_text(encoding="utf-8")
+
     assert "copilot-drawer" in html
     assert ".copilot-drawer" in css
-    assert "position: fixed" in css
+    assert re.search(r"\.copilot-drawer\s*\{[^}]*position\s*:\s*fixed", css, re.S)
 
 
 def test_frontend_keeps_evidence_scope_language() -> None:
-    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
-    text = html.lower()
-    assert "fortyguard" in text
-    assert "planning priority" in text
-    assert "medical risk" in text
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8").lower()
+
+    assert "fortyguard" in html
+    assert "planning priority" in html
+    assert "medical risk" in html or "medical-risk" in html
+    assert "not live current heat" in html
