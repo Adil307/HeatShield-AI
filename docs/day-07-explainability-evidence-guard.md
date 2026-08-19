@@ -147,4 +147,4 @@ cd backend
 python -m scripts.day7_explainability_guard
 ```
 
-Start the API from the same folder with `uvicorn app.main:app --reload`. Output: `backend/data/processed/day7_explainability_guard.json` (gitignored).
+Start the API from the same folder with `uvicorn app.main:app --reload`. Output: `backend/data/processed/day7_explainability_guard.json` (ignored by `backend/.gitignore`).

@@ -102,4 +102,4 @@ cd backend
 python -m scripts.day5_priority_analysis
 ```
 
-Output: `backend/data/processed/day5_planning_priority.json` (gitignored).
+Output: `backend/data/processed/day5_planning_priority.json` (ignored by `backend/.gitignore`).

@@ -54,4 +54,4 @@ cd backend
 python -m scripts.day8_recommendation_engine
 ```
 
-The versioned catalog is `backend/config/day8_action_catalog.json`. Output: `backend/data/processed/day8_controlled_recommendations.json` (gitignored).
+The versioned catalog is `backend/config/day8_action_catalog.json`. Output: `backend/data/processed/day8_controlled_recommendations.json` (ignored by `backend/.gitignore`).

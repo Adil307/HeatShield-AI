@@ -46,6 +46,6 @@ python -m scripts.day44_scenario_replay
 
 ## Output
 
-`backend/data/processed/day44_scenario_replay.json` (Git ignored)
+`backend/data/processed/day44_scenario_replay.json` (ignored by `backend/.gitignore`)
 
 The artifact labels evidence as historical observed, current observed, derived, inferred, or recommended so later risk logic cannot silently treat the replay as current reality.

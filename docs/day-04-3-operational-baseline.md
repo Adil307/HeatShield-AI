@@ -58,4 +58,4 @@ cd backend
 python -m scripts.day43_operational_baseline
 ```
 
-Output is written under `backend/data/processed/` and `backend/data/raw/day43/` (gitignored).
+Output is written under `backend/data/processed/` and `backend/data/raw/day43/` (ignored by `backend/.gitignore`).

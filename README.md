@@ -6,9 +6,11 @@ This is the first implementation milestone for the Global AI Hackathon'26 projec
 
 ```text
 Heckathon26/
+├── .gitignore
 ├── README.md
 ├── docs/
 ├── backend/
+│   ├── .gitignore
 │   ├── .env.example
 │   ├── requirements.txt
 │   ├── app/
@@ -22,12 +24,13 @@ Heckathon26/
 │   ├── tests/
 │   └── config/
 ├── frontend/            map UI (not started)
+│   └── .gitignore
 └── demo/
 ```
 
 This is a monorepo. Deploy the API from `/backend`. `/frontend` is the future UI deploy root and is not started yet.
 
-The Python project lives in `backend/`. Create `.venv` there. Runtime artifacts go under `backend/data/` (gitignored). The FortyGuard key lives in `backend/.env`.
+The Python project lives in `backend/`. Create `.venv` there. Runtime artifacts go under `backend/data/` (ignored by `backend/.gitignore`). The FortyGuard key lives in `backend/.env` (also ignored). The root `.gitignore` only covers whole-repo files such as `abd/`, `.DS_Store`, `.vscode/`, and any `.env`.
 
 ## Working directory
 

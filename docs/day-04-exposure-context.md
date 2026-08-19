@@ -6,7 +6,7 @@ Add mapped, time-aligned context around Day-3 hotspot evidence without claiming 
 
 ## Data source
 
-Day 4 uses OpenStreetMap data through the Overpass API. The query requests the OSM database state at the Day-3 environmental observation timestamp when available. The raw response is cached locally and remains Git ignored.
+Day 4 uses OpenStreetMap data through the Overpass API. The query requests the OSM database state at the Day-3 environmental observation timestamp when available. The raw response is cached locally and ignored by `backend/.gitignore`.
 
 Required attribution when presenting OSM-derived context: **© OpenStreetMap contributors**. OSM data are provided under the Open Database License (ODbL).
 
@@ -68,7 +68,7 @@ Raw cache:
 
 `backend/data/raw/day4/`
 
-Both are runtime evidence and are intentionally Git ignored.
+Both are runtime evidence and are ignored by `backend/.gitignore`.
 
 ## Day 4.1 correctness correction
 

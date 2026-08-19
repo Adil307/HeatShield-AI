@@ -59,7 +59,7 @@ pytest -q
 - Raw evidence: `backend/data/raw/official_heatmap_completed.json`
 - Derived result: `backend/data/processed/day2_hotspot_analysis.json`
 
-Raw and derived provider data are intentionally Git-ignored unless the team later confirms that repository publication is appropriate.
+Raw and derived provider data are ignored by `backend/.gitignore` unless the team later confirms that repository publication is appropriate.
 
 ## Failure behavior
 The pipeline fails explicitly for invalid UTF-8/JSON, provider errors, non-completed status, zero features, duplicate tile IDs, invalid/non-finite temperatures, invalid polygon coordinates, inconsistent tile min/average/max, or provider/local statistics mismatch in the main Day 2 command. It never fabricates missing values.
