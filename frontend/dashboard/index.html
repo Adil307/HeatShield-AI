@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="HeatShield AI — explainable heat-priority intelligence powered by FortyGuard evidence and a grounded local AI copilot." />
-  <title>HeatShield AI — Urban Heat Decision Intelligence</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta name="description" content="HeatShield AI â€” explainable heat-priority intelligence powered by FortyGuard evidence and a grounded local AI copilot." />
+  <title>HeatShield AI â€” Urban Heat Decision Intelligence</title>
+  <link rel="stylesheet" href="./styles.css?v=10.1.1" />
 </head>
 <body>
   <div class="shell">
@@ -20,19 +20,19 @@
 
       <nav class="nav">
         <button class="nav-item active" data-section="overview">
-          <span class="nav-icon">◫</span>
+          <span class="nav-icon">â—«</span>
           <span>Overview</span>
         </button>
         <button class="nav-item" data-section="evidence">
-          <span class="nav-icon">◎</span>
+          <span class="nav-icon">â—Ž</span>
           <span>Evidence</span>
         </button>
         <button class="nav-item" data-section="actions">
-          <span class="nav-icon">↗</span>
+          <span class="nav-icon">â†—</span>
           <span>Actions</span>
         </button>
         <button class="nav-item" id="openCopilotNav">
-          <span class="nav-icon">✦</span>
+          <span class="nav-icon">âœ¦</span>
           <span>AI Copilot</span>
         </button>
       </nav>
@@ -59,20 +59,20 @@
         <div class="top-actions">
           <span class="scope-chip">Scenario Replay</span>
           <span class="source-chip"><i></i> FortyGuard Evidence</span>
-          <button id="openCopilotTop" class="copilot-top-btn">✦ Ask Copilot</button>
+          <button id="openCopilotTop" class="copilot-top-btn">âœ¦ Ask Copilot</button>
         </div>
       </header>
 
       <div class="scope-banner">
         <div class="scope-copy">
           <span class="scope-label">EVIDENCE SCOPE</span>
-          <strong id="scopeText">Loading verified scenario scope…</strong>
+          <strong id="scopeText">Loading verified scenario scopeâ€¦</strong>
         </div>
         <div class="scope-meta">
           <span>Historical thermal evidence</span>
           <b>+</b>
           <span>Current mapped context</span>
-          <b>→</b>
+          <b>â†’</b>
           <span>Planning priority</span>
         </div>
       </div>
@@ -80,22 +80,22 @@
       <section class="kpi-row">
         <article class="kpi">
           <div class="kpi-label">Priority hotspots</div>
-          <div class="kpi-value" id="kpiHotspots">—</div>
+          <div class="kpi-value" id="kpiHotspots">â€”</div>
           <div class="kpi-foot">Ranked decision candidates</div>
         </article>
         <article class="kpi primary">
           <div class="kpi-label">Highest planning priority</div>
-          <div class="kpi-value" id="kpiPriority">—</div>
+          <div class="kpi-value" id="kpiPriority">â€”</div>
           <div class="kpi-foot" id="kpiPriorityRank">Verified planning order</div>
         </article>
         <article class="kpi">
           <div class="kpi-label">Historical peak air temp</div>
-          <div class="kpi-value" id="kpiTemp">—</div>
+          <div class="kpi-value" id="kpiTemp">â€”</div>
           <div class="kpi-foot">FortyGuard scenario evidence</div>
         </article>
         <article class="kpi">
           <div class="kpi-label">Heatmap evidence tiles</div>
-          <div class="kpi-value" id="kpiTiles">—</div>
+          <div class="kpi-value" id="kpiTiles">â€”</div>
           <div class="kpi-foot">GeoJSON provider features</div>
         </article>
       </section>
@@ -130,7 +130,7 @@
           <div class="map-caption">
             <span><i class="dot mint"></i> Priority hotspot</span>
             <span><i class="dot blue"></i> Historical thermal evidence</span>
-            <span><i class="dot amber"></i> Planning priority ≠ medical risk</span>
+            <span><i class="dot amber"></i> Planning priority â‰  medical risk</span>
           </div>
         </article>
 
@@ -150,15 +150,15 @@
             <div class="selected-top">
               <div>
                 <span class="section-kicker">SELECTED HOTSPOT</span>
-                <h2 id="detailTitle">Hotspot —</h2>
+                <h2 id="detailTitle">Hotspot â€”</h2>
               </div>
-              <span id="detailBand" class="priority-band">—</span>
+              <span id="detailBand" class="priority-band">â€”</span>
             </div>
 
             <div class="selected-score-row">
               <div class="score-ring" id="scoreRing">
                 <div>
-                  <strong id="priorityScore">—</strong>
+                  <strong id="priorityScore">â€”</strong>
                   <span>/100</span>
                 </div>
               </div>
@@ -170,7 +170,7 @@
 
             <div class="compact-metrics" id="compactMetricGrid"></div>
 
-            <button class="detail-link" data-section-jump="evidence">View full evidence →</button>
+            <button class="detail-link" data-section-jump="evidence">View full evidence â†’</button>
           </article>
         </aside>
       </section>
@@ -182,7 +182,7 @@
             <h2>Evidence behind the priority</h2>
             <p>Every displayed value is sourced from the verified HeatShield evidence chain.</p>
           </div>
-          <span id="evidenceHash" class="hash-badge">SHA loading…</span>
+          <span id="evidenceHash" class="hash-badge">SHA loadingâ€¦</span>
         </div>
 
         <div class="evidence-grid">
@@ -245,8 +245,8 @@
       </section>
 
       <footer class="footer">
-        <span>HeatShield AI • Evidence-constrained decision intelligence</span>
-        <span id="provenanceHash">Evidence lineage loading…</span>
+        <span>HeatShield AI â€¢ Evidence-constrained decision intelligence</span>
+        <span id="provenanceHash">Evidence lineage loadingâ€¦</span>
       </footer>
     </main>
 
@@ -258,12 +258,12 @@
           <h2>HeatShield Copilot</h2>
           <p>Qwen routes intent locally. Deterministic HeatShield evidence writes the factual answer.</p>
         </div>
-        <button id="closeCopilot" class="icon-button">×</button>
+        <button id="closeCopilot" class="icon-button">Ã—</button>
       </div>
 
       <div class="copilot-status-row">
         <span class="live-dot"></span>
-        <span id="copilotStatus">Checking Local Qwen…</span>
+        <span id="copilotStatus">Checking Local Qwenâ€¦</span>
         <span id="copilotModel" class="model-chip">qwen3:1.7b</span>
       </div>
 
@@ -282,7 +282,7 @@
       </div>
 
       <form id="copilotForm" class="copilot-form">
-        <textarea id="copilotInput" maxlength="2000" rows="3" placeholder="Ask about the selected hotspot…"></textarea>
+        <textarea id="copilotInput" maxlength="2000" rows="3" placeholder="Ask about the selected hotspotâ€¦"></textarea>
         <div class="composer-foot">
           <span>Grounded by verified evidence</span>
           <button type="submit" id="sendButton">Ask Copilot</button>
@@ -291,6 +291,6 @@
     </aside>
   </div>
 
-  <script src="./app.js"></script>
+  <script src="./app.js?v=10.1.1"></script>
 </body>
 </html>
