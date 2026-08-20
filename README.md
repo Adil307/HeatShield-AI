@@ -4,7 +4,7 @@
 
 HeatShield AI converts provider-backed hyperlocal thermal evidence into a traceable decision workflow: fresh thermal analysis, hottest-tile enrichment, authorized operational context, transparent planning priority, controlled recommendations, a grounded local-Qwen copilot, and explicit what-if scenario comparison.
 
-This repository is the Global AI Hackathon'26 build for **FortyGuard Auto Team 256**.
+This repository is the Global AI Hackathon'26 build for **FortyGuard Auto Team 349**.
 
 ## What HeatShield does
 
@@ -249,7 +249,7 @@ The repository keeps historical internal milestone filenames for traceability, b
 
 ## Team
 
-**FortyGuard Auto Team 256**
+**FortyGuard Auto Team 349**
 
 - Aiman - Team Lead
 - Muhammad Adil - AI Engineering / intelligence layer
