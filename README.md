@@ -251,7 +251,7 @@ The repository keeps historical internal milestone filenames for traceability, b
 
 **FortyGuard Auto Team 349**
 
-- Aiman - Team Lead
+- Aiman - Designer 
 - Muhammad Adil - AI Engineering / intelligence layer
 - Abdullah - Developer / frontend and integration
 
