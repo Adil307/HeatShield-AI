@@ -1,8 +1,50 @@
-const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveContextPriority:null, liveContextRequest:null, liveScenario:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay" };
+const state = { snapshot:null, selectedRank:null, map:null, polygonLayer:null, heatLayer:null, markerLayer:null, satelliteLayer:null, streetLayer:null, activeBasemap:"satellite", activeView:"overview", liveAnalysis:null, liveRequest:null, liveEnrichment:null, liveContextPriority:null, liveContextRequest:null, liveScenario:null, liveApiReady:false, replayScenarioLabel:"Scenario Replay", restoredLiveBaseline:false };
 const $ = (id) => document.getElementById(id);
 const fmt = (v,d=1) => typeof v === "number" && Number.isFinite(v) ? v.toFixed(d) : "—";
 const metric = (v,s="",d=1) => typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(d)}${s}` : "—";
 const esc = (v) => String(v ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+
+const LIVE_DECISION_SESSION_KEY = "heatshield.build15_1.live_decision_state.v1";
+
+function persistLiveDecisionState(){
+  if(!state.liveContextPriority||!state.liveContextRequest)return;
+  try{
+    sessionStorage.setItem(LIVE_DECISION_SESSION_KEY,JSON.stringify({
+      schema:"heatshield.build15_1.browser_session.v1",
+      saved_at:new Date().toISOString(),
+      live_context_priority:state.liveContextPriority,
+      live_context_request:state.liveContextRequest,
+      live_scenario:state.liveScenario||null
+    }));
+  }catch{}
+}
+
+function clearPersistedLiveDecisionState(){
+  try{sessionStorage.removeItem(LIVE_DECISION_SESSION_KEY);}catch{}
+  state.restoredLiveBaseline=false;
+}
+
+function restorePersistedLiveDecisionState(){
+  try{
+    const raw=sessionStorage.getItem(LIVE_DECISION_SESSION_KEY);
+    if(!raw)return false;
+    const saved=JSON.parse(raw);
+    if(saved?.schema!=="heatshield.build15_1.browser_session.v1"||!saved.live_context_priority||!saved.live_context_request){
+      sessionStorage.removeItem(LIVE_DECISION_SESSION_KEY);
+      return false;
+    }
+    state.liveContextPriority=saved.live_context_priority;
+    state.liveContextRequest=saved.live_context_request;
+    state.liveScenario=saved.live_scenario||null;
+    state.liveRequest=state.liveContextRequest?.analysis_request||state.liveRequest;
+    state.restoredLiveBaseline=true;
+    return true;
+  }catch{
+    try{sessionStorage.removeItem(LIVE_DECISION_SESSION_KEY);}catch{}
+    return false;
+  }
+}
+
 
 const VIEW_COPY = {
   overview:{
@@ -44,7 +86,7 @@ const VIEW_COPY = {
     eyebrow:"Fresh FortyGuard Thermal Evidence",
     title:"Live Analysis",
     subtitle:"Submit the current map viewport as a fresh provider-backed TCM analysis",
-    safety:"In Day 11/12, no planning priority or medical-risk score is inferred until required context is verified. Day 13/14 then use source-backed context for transparent priority and grounded answers; no medical-risk probability is inferred",
+    safety:"Fresh thermal evidence does not become a planning or medical-risk score until required context is explicitly verified. Verified context can then support transparent priority and grounded answers; no medical-risk probability is inferred",
     scope:"Fresh provider request · Controlled scope"
   },
   copilot:{
@@ -59,7 +101,7 @@ const VIEW_COPY = {
     title:"Scenario Studio",
     subtitle:"Compare the verified live baseline with explicit operational assumptions",
     safety:"Scenario outputs are planning estimates, not measured future outcomes or predicted temperature reductions",
-    scope:"Day 15 · Scenario estimate"
+    scope:"Scenario estimate · Controlled assumptions"
   }
 };
 
@@ -335,6 +377,8 @@ async function runLiveEnrichment(){
     state.liveEnrichment=payload;
     state.liveContextPriority=null;
     state.liveContextRequest=null;
+    state.liveScenario=null;
+    clearPersistedLiveDecisionState();
     $("liveContextResult")?.classList.remove("visible");
     renderCopilotContext(selectedHotspot());
     renderLiveEnrichment(payload);
@@ -391,12 +435,14 @@ async function runLiveContextPriority(event){
     state.liveContextPriority=payload;
     state.liveContextRequest={analysis_request:state.liveRequest,context_profile:contextProfile};
     state.liveScenario=null;
+    state.restoredLiveBaseline=false;
     $("scenarioResult")?.classList.remove("visible");
+    persistLiveDecisionState();
     renderLiveContextPriority(payload);
     renderScenarioStudioBaseline();
     renderCopilotContext(selectedHotspot());
     syncScenarioBar();
-    if(status){status.className="live-run-status success";status.textContent="Authorized context verified. Evidence-adjusted live planning priority is supported; Day 14 Copilot and Day 15 Scenario Studio are now unlocked.";}
+    if(status){status.className="live-run-status success";status.textContent="Authorized context verified. Evidence-adjusted live planning priority is supported; the Live Copilot and Scenario Studio are now unlocked.";}
   }catch(error){if(status){status.className="live-run-status error";status.textContent=`Context verification failed: ${error.message}`;}}
   finally{if(button){button.disabled=false;button.textContent="Verify Context & Calculate Priority";}}
 }
@@ -438,11 +484,12 @@ function scenarioPresetChanges(preset){
 }
 
 function renderScenarioStudioBaseline(){
-  const locked=$('scenarioLocked'),ready=$('scenarioReady'),button=$('scenarioRunButton');
+  const locked=$('scenarioLocked'),ready=$('scenarioReady'),button=$('scenarioRunButton'),restoreNotice=$('scenarioRestoreNotice');
   const supported=Boolean(state.liveContextPriority&&state.liveContextRequest);
   if(locked)locked.classList.toggle('hidden',supported);
   if(ready)ready.classList.toggle('hidden',!supported);
   if(button)button.disabled=!supported;
+  if(restoreNotice)restoreNotice.classList.toggle('hidden',!(supported&&state.restoredLiveBaseline));
   if(!supported)return;
   const priority=state.liveContextPriority?.priority||{},selected=state.liveContextPriority?.selected_hotspot||{},context=state.liveContextPriority?.verified_context||{};
   if($('scenarioTile'))$('scenarioTile').textContent=`Tile ${selected.tile_id??'—'}`;
@@ -452,8 +499,12 @@ function renderScenarioStudioBaseline(){
   if($('scenarioSource'))$('scenarioSource').textContent=context.source_ref||'Verified authorized context';
 }
 
-function renderScenarioResult(payload){
+function renderScenarioResult(payload,{restored=false}={}){
   state.liveScenario=payload;
+  if(!restored){
+    state.restoredLiveBaseline=false;
+    persistLiveDecisionState();
+  }
   const result=$('scenarioResult');
   result?.classList.add('visible');
   const baseline=payload?.baseline||{},scenario=payload?.scenario||{},comparison=payload?.comparison||{},assumptions=payload?.assumptions||{};
@@ -477,7 +528,7 @@ async function runLiveScenario(event){
   event?.preventDefault?.();
   const status=$('scenarioStatus'),button=$('scenarioRunButton'),preset=$('scenarioPreset')?.value||'';
   if(!state.liveContextPriority||!state.liveContextRequest){
-    if(status){status.className='live-run-status error';status.textContent='Complete Day 13 live context verification first.';}
+    if(status){status.className='live-run-status error';status.textContent='Complete live context verification first.';}
     return;
   }
   let changes;
@@ -514,6 +565,7 @@ async function runLiveAnalysis(){
     state.liveContextPriority=null;
     state.liveContextRequest=null;
     state.liveScenario=null;
+    clearPersistedLiveDecisionState();
     $("scenarioResult")?.classList.remove("visible");
     $("liveDecisionResult")?.classList.remove("visible");
     renderCopilotContext(selectedHotspot());
@@ -534,6 +586,7 @@ function resetLiveAnalysis(){
   state.liveContextPriority=null;
   state.liveContextRequest=null;
   state.liveScenario=null;
+  clearPersistedLiveDecisionState();
   $("scenarioResult")?.classList.remove("visible");
   $("liveResult")?.classList.remove("visible");
   $("liveDecisionResult")?.classList.remove("visible");
@@ -574,7 +627,15 @@ async function init(){try{const response=await fetch("/api/v1/dashboard/overview
     const scenarioRaw=payload.scenario_mode??payload.summary?.scenario_mode??payload.mode??"scenario_replay";
     const scenarioText=String(scenarioRaw).replaceAll("_"," ").replace(/\b\w/g,c=>c.toUpperCase());
     state.replayScenarioLabel=scenarioText;
-    if($("scenarioLabel")) $("scenarioLabel").textContent=scenarioText;const hash=payload.provenance?.day7_artifact_sha256;$("evidenceHash").textContent=hash?`Evidence SHA ${hash.slice(0,12)}…`:"Evidence lineage available";renderKpis();renderComparison();renderSelected();const initial=(location.hash||"#overview").slice(1);activateView(VIEW_COPY[initial]?initial:"overview",{updateHash:false});}catch(error){$("mapFallback").classList.remove("hidden");$("mapFallback").innerHTML=`<strong>Dashboard evidence could not be loaded.</strong><span>${esc(error.message)}</span>`;}loadCopilotStatus();setDefaultLiveDateTime();loadLiveAnalysisStatus();}
+    if($("scenarioLabel")) $("scenarioLabel").textContent=scenarioText;const hash=payload.provenance?.day7_artifact_sha256;$("evidenceHash").textContent=hash?`Evidence SHA ${hash.slice(0,12)}…`:"Evidence lineage available";renderKpis();renderComparison();renderSelected();
+    const restored=restorePersistedLiveDecisionState();
+    if(restored){
+      renderLiveContextPriority(state.liveContextPriority);
+      renderCopilotContext(selectedHotspot());
+      renderScenarioStudioBaseline();
+      if(state.liveScenario)renderScenarioResult(state.liveScenario,{restored:true});
+    }
+    const initial=(location.hash||"#overview").slice(1);activateView(VIEW_COPY[initial]?initial:"overview",{updateHash:false});}catch(error){$("mapFallback").classList.remove("hidden");$("mapFallback").innerHTML=`<strong>Dashboard evidence could not be loaded.</strong><span>${esc(error.message)}</span>`;}loadCopilotStatus();setDefaultLiveDateTime();loadLiveAnalysisStatus();}
 
 document.querySelectorAll(".nav-link[data-view]").forEach(button=>button.addEventListener("click",()=>activateView(button.dataset.view)));
 $("compareHotspotsButton")?.addEventListener("click",()=>activateView("hotspots"));

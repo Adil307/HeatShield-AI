@@ -10,7 +10,7 @@ def read(name: str) -> str:
 
 def test_day12_live_workspace_exposes_controlled_enrichment_step() -> None:
     html = read("index.html")
-    assert "Day 12 · Live Decision Readiness" in html
+    assert "Live Decision Readiness" in html
     assert 'id="liveEnrichButton"' in html
     assert "Enrich Hottest Tile" in html
     assert 'id="liveDecisionResult"' in html
@@ -36,4 +36,4 @@ def test_day12_keeps_missing_context_and_medical_boundary_visible() -> None:
 
 
 def test_day12_updates_frontend_asset_version() -> None:
-    assert "app.js?v=15.0.0" in read("index.html")
+    assert "app.js?v=15.1.0" in read("index.html")

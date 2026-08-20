@@ -1255,6 +1255,8 @@
   .scenario-workspace h2{font-size:17px;margin:0 0 5px;font-weight:650;}
   .scenario-workspace p{font-size:11px;color:var(--text-secondary);line-height:1.55;max-width:720px;}
   .scenario-lock{border:1px solid rgba(240,184,79,.3);background:rgba(240,184,79,.055);border-radius:9px;padding:14px;color:var(--text-secondary);font-size:10px;line-height:1.5;}
+  .scenario-lock.hidden,.scenario-ready.hidden,.scenario-restore.hidden{display:none!important;}
+  .scenario-restore{border:1px solid rgba(47,191,143,.28);background:rgba(47,191,143,.055);border-radius:9px;padding:10px 12px;color:var(--evidence);font-size:9px;line-height:1.45;margin-bottom:12px;}
   .scenario-lock strong{display:block;color:#f0b84f;font-size:11px;margin-bottom:4px;}
   .scenario-ready{display:grid;gap:14px;}
   .scenario-baseline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
@@ -1467,11 +1469,11 @@
 <button class="btn-outline-full" id="viewGroundedExplanation">See Full Explanation</button>
 </div>
 <div id="liveAnalysisPanel" aria-label="Fresh FortyGuard thermal analysis">
-  <div class="live-panel-eyebrow">Day 15 · Live Evidence-to-Scenario Workspace</div>
+  <div class="live-panel-eyebrow">Live Evidence-to-Scenario Workspace</div>
   <div class="live-panel-title">Run a New Thermal Analysis</div>
   <div class="live-panel-copy">Pan and zoom the map to the area you want to inspect. HeatShield will submit the current map viewport to FortyGuard as a new TCM thermal job.</div>
   <div class="live-api-state"><span class="live-ready-dot"></span><span id="liveApiStatus">Checking FortyGuard configuration…</span></div>
-  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Day 12 adds FortyGuard thermal-stress evidence, Day 13 verifies operational context, Day 14 grounds the assistant, and Day 15 compares explicit what-if assumptions without predicting physical cooling.</div>
+  <div class="live-scope-note">Fresh mode begins with verified temperature evidence and relative hottest tiles. Thermal-stress enrichment, explicit operational context, grounded assistance, and controlled what-if comparison build on the same traceable evidence chain without predicting physical cooling.</div>
   <form class="live-form" id="liveAnalysisForm">
     <div class="live-grid-2">
       <div class="live-field"><label for="liveDate">Analysis date (UTC)</label><input id="liveDate" type="date" required></div>
@@ -1494,9 +1496,9 @@
     <div class="live-provenance" id="liveProvenance"></div>
     <div class="live-decision-bridge">
       <div>
-        <div class="live-panel-eyebrow">Day 12 · Live Decision Readiness</div>
+        <div class="live-panel-eyebrow">Live Decision Readiness</div>
         <div class="live-decision-title">Add thermal-stress evidence to the hottest tile</div>
-        <div class="live-decision-copy">This controlled step reuses the completed thermal job and may create one FortyGuard Environmental Parameters job. At Day 12, planning priority remains withheld until exposure, vulnerability, and protection context are verified; it does not create occupancy or a medical-risk probability.</div>
+        <div class="live-decision-copy">This controlled step reuses the completed thermal job and may create one FortyGuard Environmental Parameters job. Planning priority remains withheld until exposure, vulnerability, and protection context are verified; it does not create occupancy or a medical-risk probability.</div>
       </div>
       <button class="btn-primary" id="liveEnrichButton" type="button" disabled>Enrich Hottest Tile</button>
     </div>
@@ -1517,7 +1519,7 @@
       <div class="live-provenance" id="liveDecisionProvenance"></div>
       <div class="live-context-bridge" id="liveContextBridge">
         <div>
-          <div class="live-panel-eyebrow">Day 13 · Controlled Context Verification</div>
+          <div class="live-panel-eyebrow">Controlled Context Verification</div>
           <div class="live-decision-title">Verify operational context and calculate full live priority</div>
           <div class="live-decision-copy">Every field below is explicit operator evidence. HeatShield does not infer occupancy, work conditions, vulnerability, or protection controls from the map or an LLM.</div>
         </div>
@@ -1559,11 +1561,11 @@
           <div class="live-action-list" id="liveControlledActions"></div>
           <div class="live-provenance" id="liveContextProvenance"></div>
           <div class="live-copilot-bridge">
-            <div class="live-copilot-copy"><strong>Day 14 · Live Grounded Copilot</strong>Qwen routes intent only. Verified HeatShield evidence and a deterministic evidence renderer produce the factual answer; unsupported medical probabilities, people counts, and invented actions stay blocked.</div>
+            <div class="live-copilot-copy"><strong>Live Grounded Copilot</strong>Qwen routes intent only. Verified HeatShield evidence and a deterministic evidence renderer produce the factual answer; unsupported medical probabilities, people counts, and invented actions stay blocked.</div>
             <button class="btn-primary" id="liveAskAssistant" type="button">Ask Assistant</button>
           </div>
           <div class="live-scenario-bridge">
-            <div class="live-scenario-copy"><strong>Day 15 · Scenario Studio</strong>Compare this verified live baseline with explicit operational assumptions. Thermal hazard stays fixed unless new provider evidence is collected; no temperature reduction is invented.</div>
+            <div class="live-scenario-copy"><strong>Scenario Studio</strong>Compare this verified live baseline with explicit operational assumptions. Thermal hazard stays fixed unless new provider evidence is collected; no temperature reduction is invented.</div>
             <button class="btn-primary" id="liveOpenScenario" type="button">Open Scenario Studio</button>
           </div>
         </div>
@@ -1614,11 +1616,12 @@
 <section aria-label="HeatShield Scenario Studio" id="scenarioMain">
 <article class="scenario-workspace">
 <div>
-<div class="ph-eyebrow">DAY 15 · CONTROLLED WHAT-IF COMPARISON</div>
+<div class="ph-eyebrow">CONTROLLED WHAT-IF COMPARISON</div>
 <h2>Live Scenario Studio</h2>
-<p>Start from the completed live evidence packet, change only explicit operational assumptions, and recompute the same transparent planning index. Day 15 v1 holds verified thermal hazard constant and never predicts a site-specific temperature reduction.</p>
+<p>Start from the completed live evidence packet, change only explicit operational assumptions, and recompute the same transparent planning index. This scenario model holds verified thermal hazard constant and never predicts a site-specific temperature reduction.</p>
 </div>
-<div class="scenario-lock" id="scenarioLocked"><strong>Verified live baseline required</strong>Run Live Analysis, enrich the hottest tile, and verify Day 13 operational context before using Scenario Studio.</div>
+<div class="scenario-lock" id="scenarioLocked"><strong>Verified live baseline required</strong>Run Live Analysis, enrich the hottest tile, and verify operational context before using Scenario Studio.</div>
+<div class="scenario-restore hidden" id="scenarioRestoreNotice"><strong>Verified baseline restored from this browser tab.</strong> Refresh-safe demo state was recovered from session storage; the evidence packet itself remains source-backed and traceable.</div>
 <div class="scenario-ready hidden" id="scenarioReady">
 <div class="scenario-baseline-grid">
 <div class="scenario-stat"><span>Live hotspot</span><strong id="scenarioTile">—</strong></div>
@@ -1626,12 +1629,12 @@
 <div class="scenario-stat"><span>Baseline band</span><strong id="scenarioBaselineBand">—</strong></div>
 <div class="scenario-stat"><span>Thermal hazard held constant</span><strong id="scenarioHazard">—</strong></div>
 </div>
-<div class="live-provenance">Authorized context source: <span id="scenarioSource">—</span></div>
+<div class="live-provenance">Operator evidence reference: <span id="scenarioSource">—</span> · Source type: Authorized operator input</div>
 <form class="scenario-form" id="scenarioForm">
 <div class="live-field"><label for="scenarioPreset">Scenario assumption preset</label><select id="scenarioPreset" required><option value="" selected disabled>Select a controlled scenario…</option><option value="strengthen_controls">Assume all protective controls are adequate</option><option value="cooled_recovery">Assume shaded / cooled recovery is adequate</option><option value="work_rest">Assume work-rest controls are adequate</option><option value="lower_exposure">Assume exposure is one level lower</option><option value="lower_exertion">Assume physical exertion is one level lower</option><option value="combined_controls_exposure">Assume stronger controls + one-level lower exposure</option></select></div>
 <button class="btn-primary" id="scenarioRunButton" type="submit">Run Scenario Comparison</button>
 </form>
-<div class="scenario-boundary"><strong>Scenario boundary:</strong> operational factors are hypothetical assumptions. The verified Day 12 thermal hazard is held constant, no future temperature is claimed, and a time-shift scenario requires fresh FortyGuard evidence.</div>
+<div class="scenario-boundary"><strong>Scenario boundary:</strong> operational factors are hypothetical assumptions. The verified thermal hazard is held constant, no future temperature is claimed, and a time-shift scenario requires fresh FortyGuard evidence.</div>
 <div class="live-run-status" id="scenarioStatus"></div>
 <div class="scenario-result" id="scenarioResult">
 <div class="live-classification-row"><span class="class derived">SCENARIO ESTIMATE</span><strong>Before / after transparent planning comparison</strong></div>
@@ -1651,9 +1654,9 @@
 <aside class="scenario-safety-card">
 <h3>Evidence &amp; assumption boundary</h3>
 <div class="scenario-class">
-<div class="scenario-class-row"><strong>OBSERVED / VERIFIED</strong>FortyGuard thermal and environmental evidence plus the authorized Day 13 baseline context.</div>
+<div class="scenario-class-row"><strong>OBSERVED / VERIFIED</strong>FortyGuard thermal and environmental evidence plus the authorized baseline context.</div>
 <div class="scenario-class-row"><strong>ASSUMED</strong>Only the factor changes selected in Scenario Studio.</div>
-<div class="scenario-class-row"><strong>DERIVED</strong>The same transparent Day 13 planning formula recomputed under those assumptions.</div>
+<div class="scenario-class-row"><strong>DERIVED</strong>The same transparent planning formula recomputed under those assumptions.</div>
 <div class="scenario-class-row"><strong>NOT CLAIMED</strong>No measured future outcome, no guaranteed cooling, no medical-risk probability, and no inferred people count.</div>
 </div>
 <button class="btn-ghost" id="scenarioBackLive" type="button">Back to Live Analysis</button>
@@ -1675,7 +1678,7 @@
 <button class="qp-btn" data-intent="missing">What evidence is still missing?</button>
 </div>
 <div class="copilot-thread" id="thread">
-<div class="msg assistant">Choose a question above or ask in your own words. After Day 13 context verification, the same assistant automatically switches to the fresh live evidence packet.</div>
+<div class="msg assistant">Choose a question above or ask in your own words. After live context verification, the same assistant automatically switches to the fresh live evidence packet.</div>
 </div>
 <form class="copilot-main-form" id="copilotForm">
 <input id="copilotInput" maxlength="2000" placeholder="Ask about the selected evidence…"/>
@@ -1693,5 +1696,5 @@
 </footer></div>
 </div>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=15.0.0"></script></body>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script><script src="./app.js?v=15.1.0"></script></body>
 </html>

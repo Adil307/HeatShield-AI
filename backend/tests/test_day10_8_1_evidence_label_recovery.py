@@ -23,4 +23,4 @@ def test_day10_8_1_preserves_two_human_map_modes():
     assert 'id="streetBasemapButton"' in html
     assert "Satellite" in html
     assert "Simple Map" in html
-    assert "app.js?v=15.0.0" in html
+    assert "app.js?v=15.1.0" in html

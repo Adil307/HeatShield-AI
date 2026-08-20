@@ -11,7 +11,7 @@ def read(name: str) -> str:
 
 def test_day13_live_workspace_requires_explicit_context_fields() -> None:
     html = read("index.html")
-    assert "Day 13 · Controlled Context Verification" in html
+    assert "Controlled Context Verification" in html
     assert 'id="liveContextForm"' in html
     assert 'id="liveContextSourceRef"' in html
     for element_id in [
@@ -50,4 +50,4 @@ def test_day13_backend_route_exists_and_asset_version_is_bumped() -> None:
     routes = ROUTES.read_text(encoding="utf-8")
     assert '@router.post("/live-analysis/context-priority")' in routes
     assert "run_live_context_priority" in routes
-    assert "app.js?v=15.0.0" in read("index.html")
+    assert "app.js?v=15.1.0" in read("index.html")

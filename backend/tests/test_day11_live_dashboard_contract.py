@@ -32,9 +32,9 @@ def test_day11_live_mode_keeps_decision_scope_explicit() -> None:
     js = read("app.js")
     for phrase in ["planning priority", "medical risk", "occupancy"]:
         assert phrase in html.lower()
-    assert "no planning priority or medical-risk score is inferred" in js
+    assert "does not become a planning or medical-risk score until required context is explicitly verified" in js
     assert "relative hottest tiles only" in js
 
 
 def test_day11_updates_frontend_asset_version() -> None:
-    assert "app.js?v=15.0.0" in read("index.html")
+    assert "app.js?v=15.1.0" in read("index.html")

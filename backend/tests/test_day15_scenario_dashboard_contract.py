@@ -23,7 +23,7 @@ def test_day15_ui_has_dedicated_scenario_workspace_and_live_bridge() -> None:
     assert 'data-view="scenario"' in html
     assert 'id="scenarioMain"' in html
     assert 'id="liveOpenScenario"' in html
-    assert "Day 15 · Scenario Studio" in html
+    assert "Scenario Studio" in html
     assert "Run Scenario Comparison" in html
 
 
@@ -44,4 +44,4 @@ def test_day15_frontend_reuses_exact_verified_context_request() -> None:
 
 
 def test_day15_asset_version() -> None:
-    assert "app.js?v=15.0.0" in read("index.html")
+    assert "app.js?v=15.1.0" in read("index.html")

@@ -27,7 +27,7 @@ def test_day14_frontend_preserves_exact_verified_context_request_for_copilot() -
 
 def test_day14_ui_explains_live_grounding_and_llm_boundary() -> None:
     html = read("index.html")
-    assert "Day 14 · Live Grounded Copilot" in html
+    assert "Live Grounded Copilot" in html
     assert 'id="liveAskAssistant"' in html
     assert "Qwen routes intent only" in html
     assert "deterministic evidence renderer" in html
@@ -36,5 +36,5 @@ def test_day14_ui_explains_live_grounding_and_llm_boundary() -> None:
 
 def test_day14_asset_version_and_overflow_polish() -> None:
     html = read("index.html")
-    assert "app.js?v=15.0.0" in html
+    assert "app.js?v=15.1.0" in html
     assert "overflow-x:hidden" in html
