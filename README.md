@@ -1,233 +1,260 @@
-# HeatShield AI — Day 1 Foundation
+# HeatShield AI
 
-This is the first implementation milestone for the Global AI Hackathon'26 project.
+**Explainable urban heat decision intelligence built on verified FortyGuard temperature evidence.**
+
+HeatShield AI converts provider-backed hyperlocal thermal evidence into a traceable decision workflow: fresh thermal analysis, hottest-tile enrichment, authorized operational context, transparent planning priority, controlled recommendations, a grounded local-Qwen copilot, and explicit what-if scenario comparison.
+
+This repository is the Global AI Hackathon'26 build for **FortyGuard Auto Team 256**.
+
+## What HeatShield does
+
+HeatShield is not another weather map. FortyGuard supplies the temperature-intelligence layer; HeatShield adds the decision-intelligence layer.
+
+```text
+FortyGuard thermal evidence
+        -> deterministic hotspot / thermal-stress evidence
+        -> authorized operational context
+        -> transparent planning priority + factor contributions
+        -> controlled action catalog
+        -> grounded assistant
+        -> explicit scenario estimate
+```
+
+The product keeps four evidence classes separate:
+
+- **OBSERVED / VERIFIED** - FortyGuard values and explicitly authorized operational context.
+- **DERIVED** - deterministic HeatShield calculations with versioned formulas.
+- **ASSUMED** - hypothetical Scenario Studio factor changes.
+- **RECOMMENDED** - catalog-controlled actions or evidence checks.
+
+HeatShield does **not** produce a medical-risk probability, infer people/occupancy from the map, or claim a guaranteed physical cooling outcome.
+
+## Judge-ready workflow
+
+1. **Historical replay** - repeatable evidence-backed judge path with temporal analytics and provenance.
+2. **Live Analysis** - submit the current viewport as a controlled fresh FortyGuard TCM request.
+3. **Thermal-stress enrichment** - enrich the verified hottest tile with available environmental parameters.
+4. **Context verification** - explicitly enter authorized exposure, operational-vulnerability, and protection/control evidence.
+5. **Planning priority** - calculate a transparent evidence-adjusted operational planning index and show factor contributions.
+6. **Grounded Copilot** - local Qwen may route intent, while verified tools and deterministic rendering remain the source of factual claims.
+7. **Scenario Studio** - compare the verified live baseline with explicit operational assumptions while holding verified thermal hazard constant.
+
+## Architecture
+
+```text
+Browser dashboard
+  |
+  v
+FastAPI dashboard contract
+  |
+  +-- FortyGuard adapter -> submit / poll / parse / cache
+  +-- live thermal service
+  +-- thermal-stress decision readiness
+  +-- controlled context priority service
+  +-- controlled recommendation catalog
+  +-- live grounded copilot + Evidence Guard
+  +-- Scenario Studio
+  |
+  v
+Evidence/provenance packet + deterministic renderer
+```
+
+The browser never receives the FortyGuard API key and does not call FortyGuard directly.
 
 ## Repository layout
 
 ```text
-Heckathon26/
-├── .gitignore
+heatshield-ai/
 ├── README.md
-├── docs/
 ├── backend/
-│   ├── .gitignore
-│   ├── .env.example
-│   ├── requirements.txt
 │   ├── app/
 │   │   ├── api/
-│   │   ├── schemas/
+│   │   ├── ai/
 │   │   ├── providers/
-│   │   ├── services/
-│   │   ├── ai/          copilot, tools, evidence guard
-│   │   └── db/          persistence placeholder
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── config/
 │   ├── scripts/
-│   ├── tests/
-│   └── config/
-├── frontend/            Next.js App Router UI
-│   ├── app/
-│   ├── public/
-│   ├── package.json
-│   └── .gitignore
+│   └── tests/
+├── frontend/
+│   └── dashboard/
+├── docs/
 └── demo/
 ```
 
-This is a monorepo. Deploy the API from `/backend`. Deploy the UI from `/frontend`. The UI is a clean Next.js 16 app and is not yet wired to the backend.
+Runtime evidence and caches live under `backend/data/` and are ignored by Git.
 
-The Python project lives in `backend/`. Create `.venv` there. Runtime artifacts go under `backend/data/` (ignored by `backend/.gitignore`). The FortyGuard key lives in `backend/.env` (also ignored). The root `.gitignore` only covers whole-repo files such as `abd/`, `.DS_Store`, `.vscode/`, and any `.env`.
+## Windows setup
 
-## Working directory
-
-All Python commands in this README and in `docs/` assume:
+From the repository root:
 
 ```powershell
-cd backend
-.\.venv\Scripts\Activate.ps1
-```
-
-Then:
-
-```powershell
-uvicorn app.main:app --reload
-python -m scripts.first_heatmap_test
-pytest -q
-```
-
-Do not run those commands from the repository root. `import app` only works from `backend/`.
-
-Frontend commands assume:
-
-```powershell
-cd frontend
-```
-
-Then:
-
-```powershell
-npm run dev
-```
-
-## Day 1 objective
-
-Prove the real FortyGuard provider integration before building AI/risk logic.
-
-1. Read the API key securely from `backend/.env`.
-2. Submit `POST /v1/heatmap`.
-3. Capture the returned `activity_id`.
-4. Poll `GET /v1/status/{activity_id}`.
-5. Receive `map_data` + `stats_data`.
-6. Save the real result locally.
-
-## Setup — Windows PowerShell
-
-```powershell
-cd backend
-
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-
 python -m pip install --upgrade pip
-pip install -r requirements.txt
-
-Copy-Item .env.example .env
+pip install -r .\backend\requirements.txt
+Copy-Item .\backend\.env.example .\backend\.env
 ```
 
-Edit `backend/.env` and place the real key locally:
+Edit `backend/.env` locally and set the real provider key:
 
 ```text
 FORTYGUARD_API_KEY=YOUR_REAL_KEY
 ```
 
-Never send the key in chat, commit it to GitHub, or expose it in frontend code.
+Never commit the key, paste it into chat, put it in screenshots, or expose it in frontend code.
 
-## Start backend
-
-From `backend/`, with `.venv` active:
+## Start the final dashboard
 
 ```powershell
-uvicorn app.main:app --reload
+powershell -ExecutionPolicy Bypass -File .\RUN_FINAL_DASHBOARD.ps1
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/dashboard/
 ```
 
-Useful endpoints:
-
-- `GET /health`
-- `GET /api/v1/fortyguard/config-status`
-- `POST /api/v1/fortyguard/heatmap/submit`
-- `GET /api/v1/fortyguard/status/{activity_id}`
-- `POST /api/v1/fortyguard/heatmap/run`
-
-## Start frontend
-
-From `frontend/`:
-
-```powershell
-npm install
-npm run dev
-```
-
-Open:
+Useful workspaces:
 
 ```text
-http://localhost:3000
+/dashboard/#thermal   Historical thermal replay
+/dashboard/#live      Fresh controlled live analysis
+/dashboard/#copilot   Grounded assistant
+/dashboard/#scenario  Scenario Studio
 ```
 
-## First real FortyGuard test
+## Live demo sequence
 
-In another terminal:
-
-```powershell
-cd backend
-.\.venv\Scripts\Activate.ps1
-python -m scripts.first_heatmap_test
-```
-
-Expected flow:
+In one browser tab:
 
 ```text
-Submitting real FortyGuard heatmap request...
-Activity ID: <uuid>
-Polling until completion...
-Final status: Completed
-
-GeoJSON feature count: ...
-stats_data present: True
-Saved result: backend/data/raw/first_heatmap_result.json
+Live Analysis
+-> Run FortyGuard Analysis
+-> Enrich Hottest Tile
+-> Verify Context & Calculate Priority
+-> Open Assistant
+-> Open Scenario Studio
 ```
 
-If it fails, share only the HTTP status and provider error message — never the API key.
+Use a small AOI and `100 m` granularity for the safest live demo. If the provider is slow or unavailable, switch to **Historical replay** rather than fabricating a live result.
 
-## Tests
+## Final verification
 
-Full clean-checkout recipe (FortyGuard heatmap → processed artifacts → pytest) and the short re-run command: [backend/docs/running-tests.md](backend/docs/running-tests.md).
-
-If `backend/data/processed/` already has the Day 4.4–8 artifacts:
+Run the complete 29 August readiness gate:
 
 ```powershell
-cd backend
-.\.venv\Scripts\Activate.ps1
-pytest -q
+powershell -ExecutionPolicy Bypass -File .\RUN_29AUG_FINAL_READINESS.ps1
 ```
 
-## Day 1 completion condition
+It runs:
 
-Day 1 is complete only when:
+- the complete pytest regression suite;
+- historical dashboard smoke verification;
+- live thermal, environmental-enrichment, context-priority, grounded-copilot, and Scenario Studio smoke checks;
+- Build 15.1 refresh/persistence verification;
+- final AI grounding metrics;
+- final release/documentation checks;
+- JavaScript syntax validation when Node.js is installed;
+- whitespace checks.
 
-- a real `activity_id` is returned;
-- status reaches `Completed`;
-- `map_data` is present;
-- `stats_data` is present;
-- the raw result is saved;
-- the API key is not exposed.
+The automated readiness gate uses fixtures/caches and **does not spend real FortyGuard credits**.
 
-Next milestone: **Day 2 — Heatmap parser + GeoJSON validation + hotspot extraction.**
+### AI evaluation metrics
 
+`python -m scripts.build16_final_ai_evaluation` evaluates the grounded assistant against the blueprint metrics:
 
-## Day 02 - Thermal Hotspot Intelligence
+- grounding pass rate;
+- unsupported-claim rate;
+- evidence citation coverage;
+- consistency;
+- missing-data behavior;
+- tool/intent-selection accuracy;
+- deterministic grounded-answer latency.
 
-HeatShield validates completed FortyGuard GeoJSON, independently verifies temperature statistics, and derives deterministic AOI-relative hotspot candidates with SHA-256-linked evidence IDs. The bounded top-k detector runs in O(n log k) selection time and intentionally does not claim human heat risk yet.
+A machine-readable report is written to:
 
-See `docs/day-02-hotspot-intelligence.md` for design boundaries, complexity, provenance, and failure behavior.
+```text
+backend/data/processed/build16_final_ai_evaluation.json
+```
 
-## Day 3 - Environmental Thermal Context
+and a human-readable report to:
 
-HeatShield enriches a small set of Day-2 thermal hotspot candidates with FortyGuard environmental parameters. The pipeline verifies Day-1/Day-2 provenance, derives a representative point per tile, uses deterministic request fingerprints and local completed-response caching, and links environmental evidence back to each thermal evidence ID. Day 3 preserves the distinction between observed provider values and transparent derived metadata; it does not yet claim population or clinical heat risk.
+```text
+backend/data/processed/build16_final_ai_evaluation.md
+```
 
-## Day 4 - Exposure Context Intelligence
+These generated runtime files are ignored by Git.
 
-HeatShield links Day-3 thermal/environmental evidence to time-aligned OpenStreetMap context candidates around each hotspot. It uses a single historical bounding-box Overpass query, deterministic context taxonomy, local spatial indexing, exact distance checks, provenance hashes, response caching, and explicit OSM attribution. Day 4 does not infer population counts, occupancy, vulnerability or health risk from mapped-place presence or absence.
+## Test commands
 
-## Day 4.2 - Resilient Historical Context Retrieval
+From `backend/`:
 
-Historical OpenStreetMap context retrieval now uses five small category-specific bbox queries, semantic-success validation, sequential failover across three public global/attic Overpass instances, and category-level availability states. Provider failure is represented as unknown/unavailable and is never converted into a zero context count.
+```powershell
+..\.venv\Scripts\python.exe -m pytest -q
+..\.venv\Scripts\python.exe -m scripts.build16_final_ai_evaluation
+..\.venv\Scripts\python.exe -m scripts.build16_release_smoke_test
+```
 
-### Day 4.4 - Evidence-Safe Scenario Replay
-When near-current FortyGuard heatmaps completed with zero GeoJSON features, HeatShield did not treat them as zero heat or keep spending credits. The verified historical thermal/environmental event can instead be replayed against current mapped OSM context as an explicitly cross-time planning scenario. Historical hazard, current context, temporal gap, provider availability, and provenance remain separate evidence fields.
+No real provider call is required for the test suite.
 
-## Day 5 - Transparent Planning Priority Engine
+## Safety and evidence boundaries
 
-Day 5 converts the evidence-safe Day 4.4 scenario replay into a deterministic planning-priority ranking. It uses an NWS-anchored heat-index hazard ordinal, capped mapped-context exposure, and a conservative place-type sensitivity proxy. Individual vulnerability and adaptive capacity remain unknown unless directly verified, so HeatShield intentionally withholds a final medical/risk score. The engine records factor explanations, evidence IDs, alternative weight sets, and ranking stability without making new network calls.
+HeatShield deliberately refuses to blur measurements, assumptions, and decisions.
 
-## Day 6 - Verified Vulnerability and Adaptive Capacity Evidence Layer
+- Temperature and environmental values must come from verified provider evidence.
+- Occupancy/population is never invented from mapped objects.
+- Operational vulnerability and adaptive capacity require an explicit authorized source.
+- The planning-priority index is a transparent prototype prioritization score, not a clinically validated medical-risk score.
+- Local Qwen can route an intent; it never writes the final factual numeric answer.
+- Controlled recommendations come from the versioned action catalog, not free-form LLM invention.
+- Scenario Studio labels changed factors as assumptions and does not invent a degree-Celsius reduction.
+- A time-shift scenario requires fresh provider evidence for the new time window.
 
-Day 6 adds a human-in-the-loop operational evidence layer for vulnerability and adaptive capacity. HeatShield never infers exertion, acclimatization, PPE/clothing, hydration, recovery, work-rest controls, or training from OSM, temperature, or an LLM. Unknown factors remain unknown. An evidence-adjusted planning priority is unlocked only when every required factor is explicitly verified, while medical/clinical risk remains outside the model. Day 6 makes no provider/API calls.
+## Demo reliability strategy
 
-## Day 7 - Explainability and Evidence Guard
+The final demo has two paths:
 
-HeatShield now produces deterministic explanation packets over the verified Day 4.4 -> Day 5 -> Day 6 provenance chain. Each claimable value is classified as observed or derived, while missing evidence remains unknown and policy-blocked outputs remain withheld. The structured Evidence Guard approves only exact ledger-grounded claims, rejects medical-risk probability and semantic overclaims, and requires free-form AI text to be decomposed into structured grounded claims before rendering. Day 7 makes zero provider/API/LLM calls.
+**Primary path:** fresh provider-backed live analysis.
 
+**Fallback path:** verified historical replay with cached evidence, transparent provenance, priority explanation, controlled actions, and grounded assistant.
 
-## Day 8 - Controlled Action Recommendation Engine
+The fallback is a reliability feature, not a claim that historical evidence is current.
 
-Day 8 adds a deterministic, versioned recommendation catalog grounded in the Day 7 evidence ledger. Actions are emitted only when catalog triggers are satisfied, carry exact triggering evidence and authoritative source IDs, and pass a recommendation guard. Unknown operational factors trigger verification rather than being treated as absent. No provider, Overpass, or LLM calls are required.
+## Rehearsal material
 
+Use the files under `demo/`:
 
-## Day 9 - Grounded AI Copilot Core
+- `DEMO_SCRIPT.md` - timed judge-facing sequence;
+- `JUDGE_QA.md` - concise answers to likely technical questions;
+- `REHEARSAL_CHECKLIST.md` - preflight and repeatability gate;
+- `DEMO_RUN_LOG_TEMPLATE.md` - record repeated rehearsal runs.
 
-Day 9 adds a conversational copilot over the verified Day 7 evidence ledger and Day 8 controlled recommendation catalog. The safe default is deterministic and makes zero LLM calls. An optional OpenAI Responses API planner can be enabled, but the model may only select whitelisted evidence keys and guard-approved recommendation IDs; it never writes the final factual answer. Final wording is rendered deterministically and every structured claim is rechecked against the Day 7 Claim Guard.
+## Known limitations
 
-Key safety rules: historical thermal evidence is not current heat; mapped OSM objects are not people/occupancy; medical risk probability is never produced; unknown evidence is not defaulted to zero; actions remain catalog-controlled.
+- The live path enriches the selected hottest tile first; equivalent full-priority comparison across all live tiles requires equivalent environmental and authorized context evidence per tile.
+- The current planning score is a transparent prototype engineering index, not a medical model.
+- Scenario Studio v1 changes operational assumptions while holding the verified thermal hazard constant.
+- Premium FortyGuard segmentation/report features are not required for the core MVP.
+- Dashboard session recovery is browser-tab scoped; it does not create new source evidence.
+
+## Official 18-30 August execution mapping
+
+The repository keeps historical internal milestone filenames for traceability, but judge-facing naming follows the official calendar:
+
+- **28 Aug:** UI polish, caching/failure-state reliability, repeatable demo.
+- **29 Aug:** full tests, AI metrics, README, and demo rehearsal.
+- **30 Aug:** submission freeze, backup, pitch and Q&A; no new product features.
+
+## Team
+
+**FortyGuard Auto Team 256**
+
+- Aiman - Team Lead
+- Muhammad Adil - AI Engineering / intelligence layer
+- Abdullah - Developer / frontend and integration
+
+## Stage line
+
+> Weather apps tell you how hot a city is. HeatShield AI tells you where heat becomes a priority, why, and what to do next.
